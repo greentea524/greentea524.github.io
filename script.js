@@ -8,6 +8,12 @@ $(document).ready(function() {
 	$('#leftButton').click(function(){
 		$('img').animate({left: "-=10px"}, 'fast');
 	});
+	$('img').mouseenter(function(){
+		$('div').fadeTo('fast',1);
+	});
+	$('img').mouseleave(function(){
+		$('div').fadeTo('fast',0.5);
+	});
     $(document).keydown(function(key) {
         switch(parseInt(key.which,10)) {
             
