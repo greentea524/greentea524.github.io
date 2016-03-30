@@ -5,6 +5,9 @@ $(document).ready(function() {
 	$('#rightButton').click(function(){
 		$('img').animate({left: "+=10px"}, 'fast');
 	});
+	$('#leftButton').click(function(){
+		$('img').animate({left: "-=10px"}, 'fast');
+	});
     $(document).keydown(function(key) {
         switch(parseInt(key.which,10)) {
             
