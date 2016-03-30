@@ -9,10 +9,10 @@ $(document).ready(function() {
 		$('img').animate({left: "-=10px"}, 'fast');
 	});
 	$('img').mouseenter(function(){
-		$(this).fadeTo('fast',1);
+		$('img').fadeTo('fast',1);
 	});
 	$('img').mouseleave(function(){
-		$(this).fadeTo('fast',0.5);
+		$('img').fadeTo('fast',0.5);
 	});
     $(document).keydown(function(key) {
         switch(parseInt(key.which,10)) {
