@@ -16,7 +16,7 @@ $(document).ready(function() {
 	});
 	$('img').click(function(){
 		$('img').fadeOut('slow');
-	})
+	});
     $(document).keydown(function(key) {
         switch(parseInt(key.which,10)) {
             
