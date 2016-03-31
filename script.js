@@ -17,6 +17,9 @@ $(document).ready(function() {
 	$('img').click(function(){
 		$('img').fadeOut('slow');
 	});
+	$('#nav').hover(function(){
+		$(this).toggleClass('highlighted');
+	})
     $(document).keydown(function(key) {
         switch(parseInt(key.which,10)) {
             
