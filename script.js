@@ -1,6 +1,6 @@
 $(document).ready(function() {
 	$('#myButton').click(function(){
-		$('img').fadeTo('fast',1);
+		$('img').fadeToggle( "slow", "linear" );
 	});
 	$('#rightButton').click(function(){
 		$('img').animate({left: "+=10px"}, 'fast');
