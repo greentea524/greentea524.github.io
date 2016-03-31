@@ -1,9 +1,4 @@
-img {
-    position: relative;
-    left: 0;
-    top: 0;
-}
- <style>
+<style>
 #header {
     background-color:black;
     color:black;
@@ -29,5 +24,10 @@ img {
     clear:both;
     text-align:center;
     padding:5px;
+}
+img {
+    position: relative;
+    left: 0;
+    top: 0;
 }
 </style> 
