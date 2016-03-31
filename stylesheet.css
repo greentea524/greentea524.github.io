@@ -1,7 +1,8 @@
 <style>
 #header {
     background-color:black;
-    color:black;
+    color:white;
+    clear:both;
     text-align:center;
     padding:5px;
 }
