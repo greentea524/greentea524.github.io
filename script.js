@@ -15,6 +15,7 @@ $(document).ready(function() {
 		$('img').fadeTo('fast',1);
 	});
 	$('img').draggable();
+	$('#nav').accordian();
     $(document).keydown(function(key) {
         switch(parseInt(key.which,10)) {
             
