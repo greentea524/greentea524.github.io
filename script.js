@@ -14,9 +14,7 @@ $(document).ready(function() {
 	$('img').mouseleave(function(){
 		$('img').fadeTo('fast',1);
 	});
-	$('img').click(function(){
-		$('img').fadeOut('slow');
-	});
+	$('img').draggable();
     $(document).keydown(function(key) {
         switch(parseInt(key.which,10)) {
             
