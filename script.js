@@ -16,10 +16,6 @@ $(document).ready(function() {
 	});
 	$('img').draggable();
 	$('#nav').accordion();
-	$('#blog').click(function(){
-		$(this).toggleClass('highlighted');
-	});
-
 });
 
 });
