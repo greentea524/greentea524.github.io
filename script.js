@@ -41,5 +41,4 @@ $(document).keydown(function(key) {
 				$('img').animate({top: "+=10px"}, 'fast');
 				break;
 		}
-	});
 });
