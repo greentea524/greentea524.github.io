@@ -19,11 +19,9 @@ $(document).ready(function() {
 	$('#blog').click(function(){
 		$(this).toggleClass('highlighted');
 	});
-
 });
 
-});
-    $(document).keydown(function(key) {
+$(document).keydown(function(key) {
         switch(parseInt(key.which,10)) {
             
 			// Left arrow key pressed
