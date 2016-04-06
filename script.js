@@ -16,6 +16,13 @@ $(document).ready(function() {
 	});
 	$('img').draggable();
 	$('#nav').accordion();
+	$('#blog').click(function(){
+		$(this).toggleClass('highlighted');
+	});
+
+});
+
+});
     $(document).keydown(function(key) {
         switch(parseInt(key.which,10)) {
             
