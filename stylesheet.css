@@ -17,7 +17,7 @@
 #blog {
     width: 150px;
 }
-#section {
+#section, #section2 {
     width:350px;
     float:left;
     padding:10px;
