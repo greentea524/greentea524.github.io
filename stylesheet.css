@@ -34,4 +34,13 @@ img {
     left: 0;
     top: 0;
 }
+form {
+    font-size: 12px;
+    font-family: Verdana, Arial, Sans-Serif;
+    display: inline-block;
+}
+#messages {
+    font-size: 14px;
+	font-family: Garamond, Times, Serif;
+}
 </style> 
