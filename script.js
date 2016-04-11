@@ -19,6 +19,10 @@ $(document).ready(function() {
 	$('#blog').click(function(){
 		$(this).toggleClass('highlighted');
 	});
+	$('button').click(function() {
+    	var toAdd = $("input[name=message]").val();
+        $('#messages').append("<p>"+toAdd+"</p>");
+    	});
 });
 
 $(document).keydown(function(key) {
