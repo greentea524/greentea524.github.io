@@ -1,4 +1,5 @@
 <style>
+
 #header {
     background-color:black;
     color:white;
@@ -7,15 +8,14 @@
     padding:5px;
 }
 #nav {
-    line-height:30px;
     background-color:#eeeeee;
-    height:500px;
+    height:100%;
     width:300px;
     float:left;
     padding:5px;
 }
 #blog {
-    width: 150px;
+    width: auto;
 }
 #section, #section2 {
     width:350px;
@@ -43,4 +43,4 @@ form {
     font-size: 14px;
 	font-family: Garamond, Times, Serif;
 }
-</style> 
+</style>
