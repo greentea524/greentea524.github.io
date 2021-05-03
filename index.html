@@ -5,12 +5,12 @@
 	<meta charset="utf-8">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
 	<meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1, maximum-scale=1" />
-	<title>Portfolio David Phong</title>
+	<title>David's Github Page</title>
 	<script src="bower_components/jquery/dist/jquery.min.js" charset="utf-8"></script>
 	<link rel="stylesheet" href="bower_components/foundation-sites/dist/css/foundation.min.css">
 	<link rel="stylesheet" href="">
 	<script src="bower_components/foundation-sites/dist/js/foundation.min.js" charset="utf-8"></script>
-	<script src="bower_components/normalize-css/normalize.css" charset="utf-8"></script>
+	<!-- <script src="bower_components/normalize-css/normalize.css" charset="utf-8"></script> -->
 	<script src="bower_components/typed.js/dist/typed.min.js" charset="utf-8"></script>
 	<script src="bower_components/jqcloud2/dist/jqcloud.min.js" charset="utf-8"></script>
 	<link rel="stylesheet" href="bower_components/jqcloud2/dist/jqcloud.min.css">
@@ -21,29 +21,42 @@
 	<link href="https://fonts.googleapis.com/css?family=Maven+Pro:400,500" rel="stylesheet">
 	<link rel="stylesheet" href="assets/fonts/foundation-icons/foundation-icons.css">
 	<link rel="stylesheet" href="assets/styles/styles.css">
+	<link rel="shortcut icon" href="#">
 	<script src="js/bootstrap.min.js"></script>
 	<script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
 	<script type="text/javascript">
-		google.charts.load("current", {packages:["corechart"]});
-		google.charts.setOnLoadCallback(drawChart);
-		function drawChart() {
-			var data = google.visualization.arrayToDataTable([
-				['Task', 'Hours per Day'],
-				['Work',     8],
-				['Eat',      1],
-				['Read',  1],
-				['Entertainment', 7],
-				['Sleep',    7]
-			]);
-
-			var options = {
-				title: 'My Daily Activities',
-				pieHole: 0,
-			};
-
-			var chart = new google.visualization.PieChart(document.getElementById('donutchart'));
-			chart.draw(data, options);
-		}
+		// google.charts.load("current", {packages:["corechart"]});
+		// google.charts.setOnLoadCallback(drawChart);
+		// function drawChart() {
+		// 	var data = google.visualization.arrayToDataTable([
+		// 		['Task', 'Hours per Day'],
+		// 		['Work',     8],
+		// 		['Eat',      1],
+		// 		['Read',  1],
+		// 		['Entertainment', 7],
+		// 		['Sleep',    7]
+		// 	]);
+		//
+		// 	var options = {
+		// 		title: 'My Daily Activities',
+		// 		pieHole: 0,
+		// 	};
+		//
+		// 	var chart = new google.visualization.PieChart(document.getElementById('donutchart'));
+		// 	chart.draw(data, options);
+		// }
+		$(document).ready(function() {
+		  $.ajax({
+			url: "https://jsonplaceholder.typicode.com/users",
+			type: "GET",
+			success: function(result) {
+			  console.log(result);
+			},
+			error: function(error) {
+			  console.log(error);
+			}
+		  });
+		});
 	</script>
 </head>
 
@@ -84,15 +97,16 @@
 					<div class="my-arrow-div text-center">
 						<a href="https://github.com/greentea524" target="_blank"><i class="fa fa-github-alt fa-2x"></i></a>
 						<a href="https://www.twitter.com/davidphong_" target="_blank"><i class="fa fa-twitter fa-2x"></i></a>
+						<a href="https://greentea524.github.io/google-maps" target="_blank"><i class="fa fa-map fa-2x"></i></a>
 						<!-- <a href="http://www.youtube.com/"><i class="fa fa-youtube fa-2x"></i></a> -->
 					</div>
 				</div>
 			</div>
 			<div class="row">
 				<div class="small-12 column">
-					<div class="my-arrow-div text-center">
+					<!-- <div class="my-arrow-div text-center">
 						<div id="donutchart" ></div>
-					</div>
+					</div> -->
 				</div>
 			</div>
 		</section>
