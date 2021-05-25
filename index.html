@@ -22,52 +22,17 @@
 	<link rel="stylesheet" href="assets/fonts/foundation-icons/foundation-icons.css">
 	<link rel="stylesheet" href="assets/styles/styles.css">
 	<link rel="shortcut icon" href="#">
-	<script src="js/bootstrap.min.js"></script>
-	<script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
-	<script type="text/javascript">
-		// google.charts.load("current", {packages:["corechart"]});
-		// google.charts.setOnLoadCallback(drawChart);
-		// function drawChart() {
-		// 	var data = google.visualization.arrayToDataTable([
-		// 		['Task', 'Hours per Day'],
-		// 		['Work',     8],
-		// 		['Eat',      1],
-		// 		['Read',  1],
-		// 		['Entertainment', 7],
-		// 		['Sleep',    7]
-		// 	]);
-		//
-		// 	var options = {
-		// 		title: 'My Daily Activities',
-		// 		pieHole: 0,
-		// 	};
-		//
-		// 	var chart = new google.visualization.PieChart(document.getElementById('donutchart'));
-		// 	chart.draw(data, options);
-		// }
-		$(document).ready(function() {
-		  $.ajax({
-			url: "https://jsonplaceholder.typicode.com/users",
-			type: "GET",
-			success: function(result) {
-			  console.log(result);
-			},
-			error: function(error) {
-			  console.log(error);
-			}
-		  });
-		});
-	</script>
+	<!-- <script src="js/bootstrap.min.js"></script> -->
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+	<!-- <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script> -->
+	<!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script> -->
+	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+	<link href="https://cdn.datatables.net/1.10.24/css/jquery.dataTables.min.css" rel="stylesheet">
+	<script src="https://cdn.datatables.net/1.10.24/js/jquery.dataTables.min.js"></script>
 </head>
 
 <body>
-	<!-- Watch how to use it on YouTube -->
-	<!-- https://youtu.be/ddLuZXs8Uyw -->
-
-
-	<!-- Watch how to deploy it live -->
-	<!-- https://youtu.be/E1dqffpUlMA -->
-	<div class="wrapper">
+	<div class="wrapper d-flex justify-content-center">
 		<section id="about">
 			<div class="row">
 				<div class="small-12 large-8 large-offset-2 columns text-center">
@@ -102,13 +67,54 @@
 					</div>
 				</div>
 			</div>
+			<hr>
 			<div class="row">
-				<div class="small-12 column">
-					<!-- <div class="my-arrow-div text-center">
-						<div id="donutchart" ></div>
-					</div> -->
+				<div class="small-12 column d-flex justify-content-center">
+					<ul class="nav nav-pills" id="pills-tab" role="tablist">
+					  <li class="nav-item">
+						<a class="nav-link active" id="pills-home-tab" data-toggle="pill" href="#pills-home" role="tab" aria-controls="pills-home" aria-selected="true">Users</a>
+					  </li>
+					  <li class="nav-item">
+						<a class="nav-link" id="pills-post-tab" data-toggle="pill" href="#pills-post" role="tab" aria-controls="pills-post" aria-selected="false">Posts</a>
+					  </li>
+					</ul>
 				</div>
 			</div>
+			<div class="row">
+				<div class="small-12 column">
+					<div class="tab-content" id="pills-tabContent">
+					  <div class="tab-pane fade show active" id="pills-home" role="tabpanel" aria-labelledby="pills-home-tab">
+						  <table id="myTableOne">
+							<thead>
+								<tr>
+									<th>Id</th>
+									<th>Name</th>
+									<th>Username</th>
+									<th>Email</th>
+									<th>Website</th>
+								</tr>
+							</thead>
+						</table>
+					  </div>
+					  <div class="tab-pane fade" id="pills-post" role="tabpanel" aria-labelledby="pills-post-tab">
+						  <table id="myTableTwo">
+							  <thead>
+								  <tr>
+									  <th>Title</th>
+									  <th>Views</th>
+									  <th>Published</th>
+									  <th>Created</th>
+								  </tr>
+							  </thead>
+						  </table>
+					  </div>
+					</div>
+				</div>
+			</div>
+			<a href="https://datatables.net/" target="_blank"><i class="fa fa-table fa-2x"></i>DataTable</a>
+			<a href="https://jsonplaceholder.typicode.com/" target="_blank"><i class="fa fa-database fa-2x"></i>JSONPlaceHolder</a>
+			<a href="https://mockend.com" target="_blank"><i class="fa fa-server fa-2x"></i>Mockend</a>
+
 		</section>
 
 
@@ -186,9 +192,10 @@
 		</footer> -->
 
 
-
 	</div>
 	<script src="assets/scripts/app.js" charset="utf-8"></script>
+	<script src="js/display_data.js"></script>
 </body>
+
 
 </html>
