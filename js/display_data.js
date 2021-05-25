@@ -34,6 +34,11 @@ function displayDataTableUser() {
             { "data": "email" },
             { "data": "website" }
         ],
+        responsive: true,
+        dom: 'Bfrtip',
+        buttons: [
+            'colvis'
+        ]
     });
 
     // fetch('https://jsonplaceholder.typicode.com/todos/1')
@@ -54,6 +59,11 @@ function displayDataTablePost() {
             { "data": "published" },
             { "data": "createdAt" }
         ],
+        responsive: true,
+        dom: 'Bfrtip',
+        buttons: [
+            'colvis'
+        ]
     });
 
     // fetch('https://mockend.com/greentea524/greentea524.github.io/posts')
