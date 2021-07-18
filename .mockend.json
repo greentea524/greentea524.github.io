@@ -1,21 +1,14 @@
 {
   "Post": {
     "title": { "string": {} },
-    "views": { "int": { "min": 0, "max": 500 } },
+    "views": { "int": { "min": 0, "max": 10000 } },
     "published": { "boolean": {} },
-    "createdAt": {
-        "min": "2010-01-01T00:00:00Z",
-        "max": "2020-12-31T23:59:59Z"
-      },
-    "comments": {
-      "hasMany": "Comment"
-    }
+    "createdAt": { "dateTime": { "min": "2010-01-01T00:00:00Z", "max": "2020-12-31T10:10:10Z" } },
+    "comments": { "hasMany": "Comment" }
   },
   "Comment": {
     "body": { "string": {} },
-    "post": {
-      "belongsTo": "Post"
-    }
+    "post": { "belongsTo": "Post" }
   },
   "User": {
     "name": { "string": {} },
