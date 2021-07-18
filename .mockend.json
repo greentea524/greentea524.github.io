@@ -1,17 +1,17 @@
 {
   "Post": {
-    "title": "string",
-    "views": "int",
-    "published": "boolean",
-    "createdAt": "date",
-    "comments": "Comment[]"
+    "title": { "string": {} },
+    "views": { "int": {} },
+    "published": { "boolean": {} },
+    "createdAt": { "date": {} },
+    "comments": { "Comment[]": {} }
   },
   "Comment": {
-    "body": "string",
-    "post": "Post"
+    "body": { "string": {} },
+    "post": { "Post": {} }
   },
   "User": {
-    "name": "string",
-    "age": "int"
+    "name": { "string": {} },
+    "age": { "int": {} }
   }
 }
