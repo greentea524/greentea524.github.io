@@ -17,6 +17,7 @@
   },
   "devDependencies": {
     "nodemon": "^2.0.12",
-    "minimist": ">=1.2.6"
+    "minimist": ">=1.2.6",
+    "async": ">=2.6.4"
   }
 }
