@@ -12,13 +12,13 @@
   "dependencies": {
     "@paypal/checkout-server-sdk": "^1.0.2",
     "dotenv": "^10.0.0",
-    "ejs": "^3.1.6",
+    "ejs": "^3.0.2",
     "express": "^4.17.1"
   },
   "devDependencies": {
-    "nodemon": "^2.0.12",
-    "minimist": ">=1.2.6",
+    "ansi-regex": ">=5.0.1",
     "async": ">=2.6.4",
-    "ansi-regex": ">=5.0.1"
+    "minimist": ">=1.2.6",
+    "nodemon": "^2.0.12"
   }
 }
