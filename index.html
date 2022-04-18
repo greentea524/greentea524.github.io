@@ -10,7 +10,6 @@
 	<link rel="stylesheet" href="bower_components/foundation-sites/dist/css/foundation.min.css">
 	<link rel="stylesheet" href="">
 	<script src="bower_components/foundation-sites/dist/js/foundation.min.js" charset="utf-8"></script>
-	<!-- <script src="bower_components/normalize-css/normalize.css" charset="utf-8"></script> -->
 	<script src="bower_components/typed.js/dist/typed.min.js" charset="utf-8"></script>
 	<script src="bower_components/jqcloud2/dist/jqcloud.min.js" charset="utf-8"></script>
 	<link rel="stylesheet" href="bower_components/jqcloud2/dist/jqcloud.min.css">
@@ -25,10 +24,8 @@
 	<link rel="icon"
       type="image/png"
       href="favicon.ico">
-	<!-- <script src="js/bootstrap.min.js"></script> -->
 	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
 	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
-	<!-- <script src="https://code.jquery.com/jquery-3.5.1.js"></script> -->
 	<link href="https://cdn.datatables.net/1.10.24/css/jquery.dataTables.min.css" rel="stylesheet">
 	<script src="https://cdn.datatables.net/1.10.24/js/jquery.dataTables.min.js"></script>
 	<link href="https://cdn.datatables.net/responsive/2.2.7/css/responsive.dataTables.min.css" rel="stylesheet">
@@ -52,10 +49,13 @@
 			<div class="row">
 				<div class="small-12 column">
 					<div class="cta text-center">
-						<a class="my-button cta-button expand form-button" href="https://greentea524.github.io/portfolio/"><i class="fa fa-folder fa-2x"></i> Portfolio</a>
-						<a class="my-button cta-button expand form-button" href="https://greentea524.github.io/minesweeper/"><i class="fa fa-gamepad fa-2x"></i> Minesweeper</a>
-						<a class="my-button cta-button expand form-button" href="https://greentea524.github.io/game/js-2048-main/"><i class="fa fa-gamepad fa-2x"></i> 2048</a>
-
+						<a class="my-button cta-button" href="https://greentea524.github.io/portfolio/"><i class="fa fa-folder fa-2x"></i> Portfolio</a>
+					</div>
+					<div class="cta text-center">
+						<a class="my-button cta-button" href="https://greentea524.github.io/minesweeper/"><i class="fa fa-gamepad fa-2x"></i> Minesweeper</a>
+					</div>
+					<div class="cta text-center">
+						<a class="my-button cta-button" href="https://greentea524.github.io/game/js-2048-main/"><i class="fa fa-gamepad fa-2x"></i> 2048</a>
 					</div>
 				</div>
 			</div>
@@ -69,60 +69,64 @@
 				</div>
 			</div>
 			<hr>
-			<button class="accordion">Test</button>
-			<div class="panel">
-				<div class="row">
-					<div class="small-12 d-flex justify-content-center">
-						<ul class="nav nav-pills" id="pills-tab" role="tablist">
-							<li class="nav-item">
-								<a class="nav-link active" id="pills-home-tab" data-toggle="pill" href="#pills-home" role="tab" aria-controls="pills-home" aria-selected="true">Users</a>
-							</li>
-							<li class="nav-item">
-								<a class="nav-link" id="pills-post-tab" data-toggle="pill" href="#pills-post" role="tab" aria-controls="pills-post" aria-selected="false">Posts</a>
-							</li>
-						</ul>
-					</div>
+			<div class="row">
+				<div class="small-12 d-flex justify-content-center">
+					<ul class="nav nav-pills" id="pills-tab" role="tablist">
+						<li class="nav-item">
+							<a class="nav-link active" id="pills-blank-tab" data-toggle="pill" href="#pills-blank" role="tab" aria-controls="pills-blank" aria-selected="true">Blank</a>
+						</li>
+						<li class="nav-item">
+							<a class="nav-link" id="pills-home-tab" data-toggle="pill" href="#pills-home" role="tab" aria-controls="pills-home" aria-selected="true">Users</a>
+						</li>
+						<li class="nav-item">
+							<a class="nav-link" id="pills-post-tab" data-toggle="pill" href="#pills-post" role="tab" aria-controls="pills-post" aria-selected="false">Posts</a>
+						</li>
+					</ul>
 				</div>
-				<div class="row">
-					<div class="small-12">
-						<div class="tab-content" id="pills-tabContent">
-						  <div class="tab-pane fade show active" id="pills-home" role="tabpanel" aria-labelledby="pills-home-tab">
-							  <table id="myTableOne" class="table nowrap display responsive" style="width:100%">
+			</div>
+			<div class="row">
+				<div class="small-12">
+					<div class="tab-content" id="pills-tabContent">
+						<div class="tab-pane fade show active" id="pills-blank" role="tabpanel" aria-labelledby="pills-blank-tab">
+
+						</div>
+						<div class="tab-pane fade" id="pills-home" role="tabpanel" aria-labelledby="pills-home-tab">
+							<table id="myTableOne" class="table nowrap display responsive" style="width:100%">
+							<thead class="thead-light">
+								<tr>
+									<th scope="col">Id</th>
+									<th scope="col">Name</th>
+									<th scope="col">Username</th>
+									<th scope="col">Email</th>
+									<th scope="col">Website</th>
+								</tr>
+							</thead>
+						</table>
+						</div>
+						<div class="tab-pane fade" id="pills-post" role="tabpanel" aria-labelledby="pills-post-tab">
+							<table id="myTableTwo" class="table nowrap display responsive" style="width:100%">
 								<thead class="thead-light">
 									<tr>
-										<th scope="col">Id</th>
-										<th scope="col">Name</th>
-										<th scope="col">Username</th>
-										<th scope="col">Email</th>
-										<th scope="col">Website</th>
+										<th scope="col">Title</th>
+										<th scope="col">Views</th>
+										<th scope="col">Published</th>
+										<th scope="col">Created</th>
 									</tr>
 								</thead>
 							</table>
-						  </div>
-						  <div class="tab-pane fade" id="pills-post" role="tabpanel" aria-labelledby="pills-post-tab">
-							  <table id="myTableTwo" class="table nowrap display responsive" style="width:100%">
-								  <thead class="thead-light">
-									  <tr>
-										  <th scope="col">Title</th>
-										  <th scope="col">Views</th>
-										  <th scope="col">Published</th>
-										  <th scope="col">Created</th>
-									  </tr>
-								  </thead>
-							  </table>
-						  </div>
 						</div>
 					</div>
 				</div>
-	
-				<div class="row">
-					<div class="small-12 column d-flex justify-content-center">
-						<a href="https://datatables.net/" target="_blank"><i class="fa fa-table fa-2x"></i>DataTable</a>
-						<a href="https://jsonplaceholder.typicode.com/" target="_blank"><i class="fa fa-database fa-2x"></i>JSONPlaceHolder</a>
-						<a href="https://mockend.com" target="_blank"><i class="fa fa-server fa-2x"></i>Mockend</a>
-					</div>
-				</div>
 			</div>
+
+			<!-- <div class="row">
+				<div class="small-12 column d-flex justify-content-center">
+					<a href="https://datatables.net/" target="_blank"><i class="fa fa-table fa-2x"></i>DataTable</a>
+					<a href="https://jsonplaceholder.typicode.com/" target="_blank"><i class="fa fa-database fa-2x"></i>JSONPlaceHolder</a>
+					<a href="https://mockend.com" target="_blank"><i class="fa fa-server fa-2x"></i>Mockend</a>
+				</div>
+			</div> -->
+
 		</section>
 
 		<footer id="footer">
