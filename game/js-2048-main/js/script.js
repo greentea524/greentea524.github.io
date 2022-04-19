@@ -1,6 +1,6 @@
 import Grid from "./Grid.js"
 import Tile from "./Tile.js"
-
+import TouchEvent from './touchevent.js'
 const gameBoard = document.getElementById("game-board")
 const scoreBoard = document.querySelector(".scoreboard")
 const level = document.querySelector(".level")
@@ -9,17 +9,77 @@ let score = 0;
 grid.randomEmptyCell().tile = new Tile(gameBoard)
 grid.randomEmptyCell().tile = new Tile(gameBoard)
 setupInput()
-displayFooterText()
+
+let touchEvent = null;
+
 function setupInput() {
   window.addEventListener("keydown", handleInput, { once: true })
+
+  window.addEventListener('touchstart', (event) => {
+    touchEvent = new TouchEvent(event);
+  });
+
+  window.addEventListener('touchend', handleSwipe, {once: true});
 }
 
+async function handleSwipe(event)
+{
+    if (!touchEvent) {
+         return;
+    }
+
+    touchEvent.setEndEvent(event);
+
+    if (touchEvent.isSwipeRight()) {
+      if (!canMoveRight()) {
+        setupInput()
+        return
+      }
+      await moveRight()
+    } else if (touchEvent.isSwipeLeft()) {
+      if (!canMoveLeft()) {
+        setupInput()
+        return
+      }
+      await moveLeft()
+    } else if (touchEvent.isSwipeUp()) {
+      if (!canMoveUp()) {
+        setupInput()
+        return
+      }
+      await moveUp()
+    } else if (touchEvent.isSwipeDown()) {
+      if (!canMoveDown()) {
+        setupInput()
+        return
+      }
+      await moveDown()
+    }
+
+    if(touchEvent){
+      grid.cells.forEach(cell => cell.mergeTiles())
+      const newTile = new Tile(gameBoard)
+      grid.randomEmptyCell().tile = newTile
+      if (!canMoveUp() && !canMoveDown() && !canMoveLeft() && !canMoveRight()) {
+        newTile.waitForTransition(true).then(() => {
+          alert("You lose")
+        })
+        return
+      }
+      let thisRoundScore = (1 * 1.5) * 100;
+      score = score + Math.round(thisRoundScore);
+      refreshScore();
+      setupInput()
+    }
+
+    // Reset event for next touch
+    touchEvent = null;
+
+}
 function refreshScore() {
   scoreBoard.innerHTML = score;
 }
-function refreshLevel() {
-  level.innerHTML = difficulty;
-}
+
 async function handleInput(e) {
   switch (e.key) {
     case "ArrowUp":

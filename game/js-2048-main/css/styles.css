@@ -2,9 +2,8 @@
   box-sizing: border-box;
   font-family: Arial;
 }
-
-body {
-  background-color: #333;
+.ui-page-theme-a {
+  background-color: #333 !important;
   display: flex;
   justify-content: center;
   align-items: center;
