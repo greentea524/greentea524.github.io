@@ -7,7 +7,7 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  --flex-direction: column;
+  flex-direction: column;
   height: 100vh;
   margin: 0;
   font-size: 7.5vmin;
@@ -19,7 +19,7 @@
 }
 
 a {
-  color: lightgreen;
+  color: lightgreen !important;
 }
 
 .game-text {
@@ -28,6 +28,8 @@ a {
 
 .footer-text {
   color: white;
+  font-size: .75rem;
+  text-shadow: none !important;
 }
 
 #game-board {
