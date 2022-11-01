@@ -56,7 +56,17 @@ function displayDataTableUser() {
         responsive: true,
         dom: 'Bfrtip',
         buttons: [
-            'colvis'
+            {
+                extend: 'colvis',
+                collectionLayout: 'fixed columns',
+                collectionTitle: 'Column visibility control',
+                postfixButtons: [ 'colvisRestore' ]
+            },
+            {
+                extend: 'pdfHtml5',
+                download: 'open'
+            }
+
         ]
     });
 
@@ -64,6 +74,7 @@ function displayDataTableUser() {
     // .then(response => response.json())
     // .then(json => console.log(json))
 }
+
 function displayDataTablePost() {
 
     $('#myTableTwo').DataTable({
@@ -81,7 +92,16 @@ function displayDataTablePost() {
         responsive: true,
         dom: 'Bfrtip',
         buttons: [
-            'colvis'
+            {
+                extend: 'colvis',
+                collectionLayout: 'fixed columns',
+                collectionTitle: 'Column visibility control',
+                postfixButtons: [ 'colvisRestore' ]
+            },
+            {
+                extend: 'pdfHtml5',
+                download: 'open'
+            }
         ]
     });
 

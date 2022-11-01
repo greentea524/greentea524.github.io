@@ -27,11 +27,16 @@
 	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
 	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
 	<link href="https://cdn.datatables.net/1.10.24/css/jquery.dataTables.min.css" rel="stylesheet">
-	<script src="https://cdn.datatables.net/1.10.24/js/jquery.dataTables.min.js"></script>
 	<link href="https://cdn.datatables.net/responsive/2.2.7/css/responsive.dataTables.min.css" rel="stylesheet">
-	<link href="https://cdn.datatables.net/buttons/1.7.0/css/buttons.dataTables.min.css" rel="stylesheet">
-	<script src="https://cdn.datatables.net/buttons/1.7.0/js/dataTables.buttons.min.js"></script>
+	<link href="https://cdn.datatables.net/buttons/2.2.3/css/buttons.dataTables.min.css" rel="stylesheet">
+
+	<script src="https://cdn.datatables.net/1.10.24/js/jquery.dataTables.min.js"></script>
+	<script src="https://cdn.datatables.net/buttons/2.2.3/js/dataTables.buttons.min.js"></script>
 	<script src="https://cdn.datatables.net/buttons/1.7.0/js/buttons.colVis.min.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.53/pdfmake.min.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.53/vfs_fonts.js"></script>
+	<script src="https://cdn.datatables.net/buttons/2.2.3/js/buttons.html5.min.js"></script>
+	
 </head>
 
 <body>
@@ -95,16 +100,18 @@
 						</div>
 						<div class="tab-pane fade" id="pills-home" role="tabpanel" aria-labelledby="pills-home-tab">
 							<table id="myTableOne" class="table nowrap display responsive" style="width:100%">
-							<thead class="thead-light">
-								<tr>
-									<th scope="col">Id</th>
-									<th scope="col">Name</th>
-									<th scope="col">Username</th>
-									<th scope="col">Email</th>
-									<th scope="col">Website</th>
-								</tr>
-							</thead>
-						</table>
+								<thead class="thead-light">
+									<tr>
+										<th scope="col">Id</th>
+										<th scope="col">Name</th>
+										<th scope="col">Username</th>
+										<th scope="col">Email</th>
+										<th scope="col">Website</th>
+									</tr>
+								</thead>
+							</table>
+							<a href="https://datatables.net/" target="_blank"><i class="fa fa-table fa-2x"></i>DataTable</a>
+							<a href="https://jsonplaceholder.typicode.com/" target="_blank"><i class="fa fa-database fa-2x"></i>JSONPlaceHolder</a>
 						</div>
 						<div class="tab-pane fade" id="pills-post" role="tabpanel" aria-labelledby="pills-post-tab">
 							<table id="myTableTwo" class="table nowrap display responsive" style="width:100%">
@@ -117,19 +124,15 @@
 									</tr>
 								</thead>
 							</table>
+							<a href="https://datatables.net/" target="_blank"><i class="fa fa-table fa-2x"></i>DataTable</a>
+							<a href="https://mockend.com" target="_blank"><i class="fa fa-server fa-2x"></i>Mockend</a>
 						</div>
+
 					</div>
 				</div>
 			</div>
 
-			<!-- <div class="row">
-				<div class="small-12 column d-flex justify-content-center">
-					<a href="https://datatables.net/" target="_blank"><i class="fa fa-table fa-2x"></i>DataTable</a>
-					<a href="https://jsonplaceholder.typicode.com/" target="_blank"><i class="fa fa-database fa-2x"></i>JSONPlaceHolder</a>
-					<a href="https://mockend.com" target="_blank"><i class="fa fa-server fa-2x"></i>Mockend</a>
-				</div>
-			</div> -->
-
+			<hr>
 		</section>
 
 		<footer id="footer">
