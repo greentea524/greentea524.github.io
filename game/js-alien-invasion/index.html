@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>Alien Invasion</title>
+    <title>Grok Invasion</title>
     <style>
       canvas {
         border: 1px solid black;
@@ -11,19 +11,53 @@
       body {
         background: #000;
         display: flex;
+        flex-direction: column;
         justify-content: center;
         align-items: center;
         height: 100vh;
         margin: 0;
+        color: white;
+        font-family: Arial, sans-serif;
+      }
+      #instructionsBtn {
+        margin: 10px;
+        padding: 5px 10px;
+        cursor: pointer;
+      }
+      #instructions {
+        display: none;
+        position: absolute;
+        background: rgba(0, 0, 0, 0.8);
+        padding: 10px;
+        border-radius: 5px;
+        max-width: 300px;
+        text-align: left;
       }
     </style>
   </head>
   <body>
+    <h2>Grok Invasion</h2>
     <canvas id="gameCanvas" width="800" height="600"></canvas>
+    <button id="instructionsBtn">Instructions</button>
+    <div id="instructions">
+      <h3>Instructions</h3>
+      <ul>
+        <li>Left Arrow: Move left</li>
+        <li>Right Arrow: Move right</li>
+        <li>Spacebar: Shoot</li>
+        <li>White ship: You</li>
+        <li>Green blocks: Enemy Groks</li>
+        <li>Red shots: Your bullets</li>
+        <li>Score +10 per Grok hit</li>
+        <li>Game ends if Groks reach your level</li>
+      </ul>
+    </div>
 
     <script>
       const canvas = document.getElementById("gameCanvas");
       const ctx = canvas.getContext("2d");
+      const instructionsBtn = document.getElementById("instructionsBtn");
+      const instructions = document.getElementById("instructions");
 
       // Player
       const player = {
@@ -40,6 +74,8 @@
       const bulletSpeed = 7;
       const bulletWidth = 4;
       const bulletHeight = 10;
+      let bulletsShot = 0;
+      let hits = 0;
 
       // Aliens
       const aliens = [];
@@ -60,6 +96,7 @@
       // Event listeners
       document.addEventListener("keydown", keyDownHandler);
       document.addEventListener("keyup", keyUpHandler);
+      instructionsBtn.addEventListener("click", toggleInstructions);
 
       function keyDownHandler(e) {
         if (e.key === "Right" || e.key === "ArrowRight") rightPressed = true;
@@ -71,6 +108,11 @@
         if (e.key === "Right" || e.key === "ArrowRight") rightPressed = false;
         if (e.key === "Left" || e.key === "ArrowLeft") leftPressed = false;
         if (e.key === " ") spacePressed = false;
+      }
+
+      function toggleInstructions() {
+        instructions.style.display =
+          instructions.style.display === "block" ? "none" : "block";
       }
 
       // Initialize aliens
@@ -125,6 +167,7 @@
             x: player.x + player.width / 2 - bulletWidth / 2,
             y: player.y - bulletHeight,
           });
+          bulletsShot++;
           spacePressed = false;
         }
 
@@ -165,16 +208,22 @@
               aliens.splice(aIndex, 1);
               bullets.splice(bIndex, 1);
               score += 10;
+              hits++;
             }
           });
         });
       }
 
-      // Draw score
-      function drawScore() {
+      // Draw stats
+      function drawStats() {
         ctx.fillStyle = "white";
         ctx.font = "16px Arial";
         ctx.fillText(`Score: ${score}`, 10, 20);
+        const hitRate =
+          bulletsShot > 0 ? ((hits / bulletsShot) * 100).toFixed(1) : 0;
+        ctx.fillText(`Hit Rate: ${hitRate}%`, 10, 40);
+        ctx.fillText(`Shots: ${bulletsShot}`, 10, 60);
+        ctx.fillText(`Hits: ${hits}`, 10, 80);
       }
 
       // Main game loop
@@ -183,10 +232,17 @@
           ctx.fillStyle = "white";
           ctx.font = "30px Arial";
           ctx.fillText("Game Over!", canvas.width / 2 - 80, canvas.height / 2);
+          const hitRate =
+            bulletsShot > 0 ? ((hits / bulletsShot) * 100).toFixed(1) : 0;
           ctx.fillText(
-            `Score: ${score}`,
-            canvas.width / 2 - 60,
+            `Final Score: ${score}`,
+            canvas.width / 2 - 80,
             canvas.height / 2 + 40
+          );
+          ctx.fillText(
+            `Hit Rate: ${hitRate}%`,
+            canvas.width / 2 - 80,
+            canvas.height / 2 + 80
           );
           return;
         }
@@ -196,7 +252,7 @@
         drawPlayer();
         drawBullets();
         drawAliens();
-        drawScore();
+        drawStats();
         update();
 
         if (aliens.length === 0) {
