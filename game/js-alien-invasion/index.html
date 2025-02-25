@@ -42,6 +42,7 @@
     <div id="instructions">
       <h3>Instructions</h3>
       <ul>
+        <li>Mouse: Move left/right</li>
         <li>Left Arrow: Move left</li>
         <li>Right Arrow: Move right</li>
         <li>Spacebar or Mouse Click: Shoot</li>
@@ -76,7 +77,7 @@
       const bulletHeight = 10;
       let bulletsShot = 0;
       let hits = 0;
-      let canShoot = true; // Cooldown for shooting
+      let canShoot = true;
 
       // Aliens
       const aliens = [];
@@ -98,13 +99,14 @@
       document.addEventListener("keydown", keyDownHandler);
       document.addEventListener("keyup", keyUpHandler);
       canvas.addEventListener("click", mouseClickHandler);
+      canvas.addEventListener("mousemove", mouseMoveHandler); // New mouse movement listener
       instructionsBtn.addEventListener("click", toggleInstructions);
 
       function keyDownHandler(e) {
         if (e.key === "Right" || e.key === "ArrowRight") rightPressed = true;
         if (e.key === "Left" || e.key === "ArrowLeft") leftPressed = true;
         if (e.key === " ") {
-          e.preventDefault(); // Prevent scrolling
+          e.preventDefault();
           spacePressed = true;
         }
       }
@@ -121,12 +123,24 @@
         }
       }
 
+      // New mouse movement handler
+      function mouseMoveHandler(e) {
+        if (!gameOver) {
+          const rect = canvas.getBoundingClientRect();
+          const mouseX = e.clientX - rect.left;
+          // Keep player within canvas bounds
+          player.x = Math.max(
+            0,
+            Math.min(mouseX - player.width / 2, canvas.width - player.width)
+          );
+        }
+      }
+
       function toggleInstructions() {
         instructions.style.display =
           instructions.style.display === "block" ? "none" : "block";
       }
 
-      // Initialize aliens
       function createAliens() {
         for (let row = 0; row < 3; row++) {
           for (let col = 0; col < 8; col++) {
@@ -140,13 +154,11 @@
         }
       }
 
-      // Draw player
       function drawPlayer() {
         ctx.fillStyle = "white";
         ctx.fillRect(player.x, player.y, player.width, player.height);
       }
 
-      // Draw bullets
       function drawBullets() {
         ctx.fillStyle = "red";
         bullets.forEach((bullet) => {
@@ -154,7 +166,6 @@
         });
       }
 
-      // Draw aliens
       function drawAliens() {
         ctx.fillStyle = "green";
         aliens.forEach((alien) => {
@@ -162,7 +173,6 @@
         });
       }
 
-      // Shoot function
       function shootBullet() {
         if (bullets.length < 5) {
           bullets.push({
@@ -171,13 +181,12 @@
           });
           bulletsShot++;
           canShoot = false;
-          setTimeout(() => (canShoot = true), 200); // 200ms cooldown
+          setTimeout(() => (canShoot = true), 200);
         }
       }
 
-      // Update game objects
       function update() {
-        // Move player
+        // Keyboard movement (still works alongside mouse)
         if (rightPressed && player.x < canvas.width - player.width) {
           player.x += player.speed;
         }
@@ -185,19 +194,16 @@
           player.x -= player.speed;
         }
 
-        // Shoot bullet with spacebar
         if (spacePressed && canShoot) {
           shootBullet();
           spacePressed = false;
         }
 
-        // Move bullets
         bullets.forEach((bullet, index) => {
           bullet.y -= bulletSpeed;
           if (bullet.y < 0) bullets.splice(index, 1);
         });
 
-        // Move aliens
         let hitEdge = false;
         aliens.forEach((alien) => {
           alien.x += alienSpeed * alienDirection;
@@ -216,7 +222,6 @@
           });
         }
 
-        // Collision detection
         bullets.forEach((bullet, bIndex) => {
           aliens.forEach((alien, aIndex) => {
             if (
@@ -234,7 +239,6 @@
         });
       }
 
-      // Draw stats
       function drawStats() {
         ctx.fillStyle = "white";
         ctx.font = "16px Arial";
@@ -246,7 +250,6 @@
         ctx.fillText(`Hits: ${hits}`, 10, 80);
       }
 
-      // Main game loop
       function gameLoop() {
         if (gameOver) {
           ctx.fillStyle = "white";
@@ -282,7 +285,6 @@
         requestAnimationFrame(gameLoop);
       }
 
-      // Start game
       createAliens();
       gameLoop();
     </script>
