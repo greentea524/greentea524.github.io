@@ -2,27 +2,38 @@
 <html>
   <head>
     <title>Grok Invasion</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <style>
-      canvas {
-        border: 1px solid black;
-        display: block;
-        margin: 0 auto;
-      }
       body {
         background: #000;
         display: flex;
         flex-direction: column;
         justify-content: center;
         align-items: center;
-        height: 100vh;
+        min-height: 100vh;
         margin: 0;
         color: white;
         font-family: Arial, sans-serif;
+        overflow: hidden;
+        touch-action: none;
+      }
+      canvas {
+        border: 1px solid black;
+        max-width: 100%;
+        max-height: 70vh;
+        width: auto;
+        height: auto;
+        display: block;
+      }
+      h2 {
+        margin: 10px 0;
+        font-size: clamp(1.5rem, 4vw, 2rem);
       }
       #instructionsBtn {
-        margin: 10px;
+        margin: 5px;
         padding: 5px 10px;
         cursor: pointer;
+        font-size: clamp(0.8rem, 2vw, 1rem);
       }
       #instructions {
         display: none;
@@ -30,28 +41,79 @@
         background: rgba(0, 0, 0, 0.8);
         padding: 10px;
         border-radius: 5px;
-        max-width: 300px;
+        max-width: 80%;
+        font-size: clamp(0.8rem, 2vw, 1rem);
         text-align: left;
+        z-index: 10;
+      }
+      #touchControls {
+        position: fixed;
+        bottom: 10px;
+        width: 100%;
+        display: flex;
+        justify-content: space-between;
+        padding: 0 20px;
+        box-sizing: border-box;
+        z-index: 10;
+      }
+      #moveControls {
+        display: flex;
+        gap: 20px;
+      }
+      .touchBtn {
+        width: 50px;
+        height: 50px;
+        background: rgba(255, 255, 255, 0.3);
+        border-radius: 50%;
+        touch-action: none;
+        user-select: none;
+      }
+      #restartBtn {
+        display: none;
+        position: absolute;
+        top: 60%;
+        padding: 10px 20px;
+        font-size: clamp(1rem, 3vw, 1.5rem);
+        background: white;
+        color: black;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        z-index: 10;
+      }
+      @media (min-width: 768px) {
+        #touchControls {
+          display: none;
+        }
       }
     </style>
   </head>
   <body>
     <h2>Grok Invasion</h2>
-    <canvas id="gameCanvas" width="800" height="600"></canvas>
+    <canvas id="gameCanvas"></canvas>
     <button id="instructionsBtn">Instructions</button>
+    <button id="restartBtn">Restart</button>
     <div id="instructions">
       <h3>Instructions</h3>
       <ul>
-        <li>Mouse: Move left/right</li>
-        <li>Left Arrow: Move left</li>
-        <li>Right Arrow: Move right</li>
-        <li>Spacebar or Mouse Click: Shoot</li>
-        <li>White ship: You</li>
-        <li>Green blocks: Enemy Groks</li>
+        <li>Touch Left/Right: Move (Mobile)</li>
+        <li>Touch Shoot: Fire (Mobile)</li>
+        <li>Mouse: Move left/right (Desktop)</li>
+        <li>Left/Right Arrow: Move (Desktop)</li>
+        <li>Spacebar/Click: Shoot (Desktop)</li>
+        <li>White jet: You</li>
+        <li>Green ships: Enemy Groks</li>
         <li>Red shots: Your bullets</li>
         <li>Score +10 per Grok hit</li>
-        <li>Game ends if Groks reach your level</li>
+        <li>Game ends if Groks reach bottom</li>
       </ul>
+    </div>
+    <div id="touchControls">
+      <div id="moveControls">
+        <div id="leftBtn" class="touchBtn"></div>
+        <div id="rightBtn" class="touchBtn"></div>
+      </div>
+      <div id="shootBtn" class="touchBtn"></div>
     </div>
 
     <script>
@@ -59,18 +121,17 @@
       const ctx = canvas.getContext("2d");
       const instructionsBtn = document.getElementById("instructionsBtn");
       const instructions = document.getElementById("instructions");
+      const restartBtn = document.getElementById("restartBtn");
 
-      // Player
       const player = {
-        x: canvas.width / 2,
-        y: canvas.height - 50,
+        x: 0,
+        y: 0,
         width: 40,
         height: 20,
         speed: 5,
         dx: 0,
       };
 
-      // Bullets
       const bullets = [];
       const bulletSpeed = 7;
       const bulletWidth = 4;
@@ -79,28 +140,74 @@
       let hits = 0;
       let canShoot = true;
 
-      // Aliens
       const aliens = [];
       const alienWidth = 30;
       const alienHeight = 20;
       const alienSpeed = 1;
       let alienDirection = 1;
 
-      // Game state
+      const particles = [];
+      const particleCount = 20;
+      const particleLifetime = 30;
+
       let score = 0;
       let gameOver = false;
 
-      // Controls
       let rightPressed = false;
       let leftPressed = false;
       let spacePressed = false;
 
-      // Event listeners
+      function resizeCanvas() {
+        const maxWidth = window.innerWidth * 0.9;
+        const maxHeight = window.innerHeight * 0.7;
+        const aspectRatio = 800 / 600;
+
+        let newWidth = maxWidth;
+        let newHeight = newWidth / aspectRatio;
+
+        if (newHeight > maxHeight) {
+          newHeight = maxHeight;
+          newWidth = newHeight * aspectRatio;
+        }
+
+        canvas.width = newWidth;
+        canvas.height = newHeight;
+
+        const scale = newWidth / 800;
+        player.width = 40 * scale;
+        player.height = 20 * scale;
+        player.speed = 5 * scale;
+        player.y = canvas.height - player.height - 10;
+        player.x = canvas.width / 2 - player.width / 2;
+
+        aliens.length = 0;
+        createAliens(scale);
+      }
+      resizeCanvas();
+      window.addEventListener("resize", resizeCanvas);
+
+      // Touch controls
+      const leftBtn = document.getElementById("leftBtn");
+      const rightBtn = document.getElementById("rightBtn");
+      const shootBtn = document.getElementById("shootBtn");
+
+      // Desktop controls
       document.addEventListener("keydown", keyDownHandler);
       document.addEventListener("keyup", keyUpHandler);
       canvas.addEventListener("click", mouseClickHandler);
-      canvas.addEventListener("mousemove", mouseMoveHandler); // New mouse movement listener
+      canvas.addEventListener("mousemove", mouseMoveHandler);
       instructionsBtn.addEventListener("click", toggleInstructions);
+      restartBtn.addEventListener("click", restartGame);
+
+      // Touch controls
+      leftBtn.addEventListener("touchstart", () => (leftPressed = true));
+      leftBtn.addEventListener("touchend", () => (leftPressed = false));
+      rightBtn.addEventListener("touchstart", () => (rightPressed = true));
+      rightBtn.addEventListener("touchend", () => (rightPressed = false));
+      shootBtn.addEventListener("touchstart", (e) => {
+        e.preventDefault();
+        if (!gameOver && canShoot) shootBullet();
+      });
 
       function keyDownHandler(e) {
         if (e.key === "Right" || e.key === "ArrowRight") rightPressed = true;
@@ -123,12 +230,10 @@
         }
       }
 
-      // New mouse movement handler
       function mouseMoveHandler(e) {
         if (!gameOver) {
           const rect = canvas.getBoundingClientRect();
           const mouseX = e.clientX - rect.left;
-          // Keep player within canvas bounds
           player.x = Math.max(
             0,
             Math.min(mouseX - player.width / 2, canvas.width - player.width)
@@ -141,22 +246,50 @@
           instructions.style.display === "block" ? "none" : "block";
       }
 
-      function createAliens() {
+      function createAliens(scale = 1) {
+        const scaledAlienWidth = alienWidth * scale;
+        const scaledAlienHeight = alienHeight * scale;
+        const columns = Math.floor(
+          (canvas.width - 60) / (scaledAlienWidth + 20)
+        );
+
         for (let row = 0; row < 3; row++) {
-          for (let col = 0; col < 8; col++) {
+          for (let col = 0; col < columns; col++) {
             aliens.push({
-              x: col * (alienWidth + 20) + 50,
-              y: row * (alienHeight + 20) + 50,
-              width: alienWidth,
-              height: alienHeight,
+              x: col * (scaledAlienWidth + 20 * scale) + 30 * scale,
+              y: row * (scaledAlienHeight + 20 * scale) + 30 * scale,
+              width: scaledAlienWidth,
+              height: scaledAlienHeight,
             });
           }
         }
       }
 
+      function createFireworks(x, y) {
+        for (let i = 0; i < particleCount; i++) {
+          const angle = Math.random() * Math.PI * 2;
+          const speed = Math.random() * 3 + 1;
+          particles.push({
+            x: x + alienWidth / 2,
+            y: y + alienHeight / 2,
+            vx: Math.cos(angle) * speed,
+            vy: Math.sin(angle) * speed,
+            life: particleLifetime,
+            color: `hsl(${Math.random() * 360}, 100%, 50%)`,
+          });
+        }
+      }
+
       function drawPlayer() {
         ctx.fillStyle = "white";
-        ctx.fillRect(player.x, player.y, player.width, player.height);
+        ctx.beginPath();
+        ctx.moveTo(player.x + player.width / 2, player.y);
+        ctx.lineTo(player.x, player.y + player.height);
+        ctx.lineTo(player.x + player.width * 0.3, player.y + player.height / 2);
+        ctx.lineTo(player.x + player.width * 0.7, player.y + player.height / 2);
+        ctx.lineTo(player.x + player.width, player.y + player.height);
+        ctx.closePath();
+        ctx.fill();
       }
 
       function drawBullets() {
@@ -169,7 +302,41 @@
       function drawAliens() {
         ctx.fillStyle = "green";
         aliens.forEach((alien) => {
-          ctx.fillRect(alien.x, alien.y, alien.width, alien.height);
+          ctx.beginPath();
+          ctx.arc(
+            alien.x + alien.width / 2,
+            alien.y + alien.height / 3,
+            alien.width / 4,
+            Math.PI,
+            0
+          );
+          ctx.moveTo(alien.x, alien.y + alien.height);
+          ctx.lineTo(alien.x + alien.width / 4, alien.y + alien.height / 3);
+          ctx.lineTo(
+            alien.x + (alien.width * 3) / 4,
+            alien.y + alien.height / 3
+          );
+          ctx.lineTo(alien.x + alien.width, alien.y + alien.height);
+          ctx.closePath();
+          ctx.fill();
+        });
+      }
+
+      function drawParticles() {
+        particles.forEach((particle, index) => {
+          ctx.fillStyle = particle.color;
+          ctx.beginPath();
+          ctx.arc(particle.x, particle.y, 2, 0, Math.PI * 2);
+          ctx.fill();
+
+          particle.x += particle.vx;
+          particle.y += particle.vy;
+          particle.vy += 0.1;
+          particle.life--;
+
+          if (particle.life <= 0) {
+            particles.splice(index, 1);
+          }
         });
       }
 
@@ -185,8 +352,21 @@
         }
       }
 
+      function restartGame() {
+        gameOver = false;
+        score = 0;
+        bulletsShot = 0;
+        hits = 0;
+        bullets.length = 0;
+        aliens.length = 0;
+        particles.length = 0;
+        player.x = canvas.width / 2 - player.width / 2;
+        resizeCanvas();
+        restartBtn.style.display = "none";
+        gameLoop();
+      }
+
       function update() {
-        // Keyboard movement (still works alongside mouse)
         if (rightPressed && player.x < canvas.width - player.width) {
           player.x += player.speed;
         }
@@ -210,7 +390,7 @@
           if (alien.x + alien.width > canvas.width || alien.x < 0) {
             hitEdge = true;
           }
-          if (alien.y + alien.height >= player.y) {
+          if (alien.y + alien.height > canvas.height) {
             gameOver = true;
           }
         });
@@ -230,6 +410,7 @@
               bullet.y < alien.y + alien.height &&
               bullet.y + bulletHeight > alien.y
             ) {
+              createFireworks(alien.x, alien.y);
               aliens.splice(aIndex, 1);
               bullets.splice(bIndex, 1);
               score += 10;
@@ -241,7 +422,7 @@
 
       function drawStats() {
         ctx.fillStyle = "white";
-        ctx.font = "16px Arial";
+        ctx.font = `${16 * (canvas.width / 800)}px Arial`;
         ctx.fillText(`Score: ${score}`, 10, 20);
         const hitRate =
           bulletsShot > 0 ? ((hits / bulletsShot) * 100).toFixed(1) : 0;
@@ -253,7 +434,7 @@
       function gameLoop() {
         if (gameOver) {
           ctx.fillStyle = "white";
-          ctx.font = "30px Arial";
+          ctx.font = `${30 * (canvas.width / 800)}px Arial`;
           ctx.fillText("Game Over!", canvas.width / 2 - 80, canvas.height / 2);
           const hitRate =
             bulletsShot > 0 ? ((hits / bulletsShot) * 100).toFixed(1) : 0;
@@ -267,6 +448,7 @@
             canvas.width / 2 - 80,
             canvas.height / 2 + 80
           );
+          restartBtn.style.display = "block";
           return;
         }
 
@@ -275,17 +457,17 @@
         drawPlayer();
         drawBullets();
         drawAliens();
+        drawParticles();
         drawStats();
         update();
 
         if (aliens.length === 0) {
-          createAliens();
+          createAliens(canvas.width / 800);
         }
 
         requestAnimationFrame(gameLoop);
       }
 
-      createAliens();
       gameLoop();
     </script>
   </body>
