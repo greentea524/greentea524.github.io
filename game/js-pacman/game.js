@@ -4,7 +4,7 @@ const camera = new THREE.PerspectiveCamera(
   75,
   window.innerWidth / window.innerHeight,
   0.1,
-  1000
+  1000,
 );
 const renderer = new THREE.WebGLRenderer();
 renderer.setSize(window.innerWidth, window.innerHeight);
@@ -19,37 +19,45 @@ scene.add(directionalLight);
 
 // Pac-Man (a yellow sphere with a torch-like glow)
 const pacmanGeometry = new THREE.SphereGeometry(0.5, 32, 32);
-const pacmanMaterial = new THREE.MeshPhongMaterial({ color: 0xffff00 }); // Bright yellow for torch effect
+const pacmanMaterial = new THREE.MeshPhongMaterial({
+  color: 0xffff00,
+  emissive: 0x886600,
+  emissiveIntensity: 0.7,
+}); // Bright yellow for torch effect
 const pacman = new THREE.Mesh(pacmanGeometry, pacmanMaterial);
-pacman.position.set(0, 0.5, 0);
+pacman.position.set(-4, 0.5, -4);
 scene.add(pacman);
+
+const pacmanLight = new THREE.PointLight(0xffee88, 0.8, 6);
+pacmanLight.position.set(0, 0.8, 0);
+pacman.add(pacmanLight);
 
 // Dungeon walls (stone-like texture and color)
 const wallMaterial = new THREE.MeshPhongMaterial({ color: 0x666633 }); // Dull stone brown
-const wallGeometry = new THREE.BoxGeometry(1, 1, 10);
+const wallThickness = 0.4;
 
 // Create a winding dungeon maze layout
 const walls = [];
-function addWall(x, y, z) {
+function addWall(x, y, z, width = 1, depth = 1) {
+  const wallGeometry = new THREE.BoxGeometry(width, 1, depth);
   const wall = new THREE.Mesh(wallGeometry, wallMaterial);
   wall.position.set(x, y, z);
   scene.add(wall);
+  wall.userData.box = new THREE.Box3().setFromObject(wall);
   walls.push(wall);
 }
 
-// Dungeon maze structure (more winding and complex)
-addWall(0, 0.5, -5); // Back wall
-addWall(0, 0.5, 5); // Front wall
-addWall(-5, 0.5, 0); // Left wall
-addWall(5, 0.5, 0); // Right wall
-addWall(-3, 0.5, -3); // Inner wall 1
-addWall(3, 0.5, 3); // Inner wall 2
-addWall(-3, 0.5, 3); // Inner wall 3
-addWall(3, 0.5, -3); // Inner wall 4
-addWall(-1, 0.5, -1); // Center wall 1
-addWall(1, 0.5, 1); // Center wall 2
-addWall(0, 0.5, 2); // Vertical divider
-addWall(-2, 0.5, 0); // Horizontal divider
+// Dungeon maze structure with consistent corridor widths
+addWall(0, 0.5, -5, 10, wallThickness); // Back wall
+addWall(0, 0.5, 5, 10, wallThickness); // Front wall
+addWall(-5, 0.5, 0, wallThickness, 10); // Left wall
+addWall(5, 0.5, 0, wallThickness, 10); // Right wall
+
+addWall(-2, 0.5, -2, wallThickness, 4); // Vertical segment top-left
+addWall(2, 0.5, 2, wallThickness, 4); // Vertical segment bottom-right
+addWall(-2, 0.5, 2, 4, wallThickness); // Horizontal segment bottom-left
+addWall(2, 0.5, -2, 4, wallThickness); // Horizontal segment top-right
+addWall(0, 0.5, 0, 1.2, 1.2); // Center pillar
 
 // Dungeon floor (stone tiles)
 const floorGeometry = new THREE.PlaneGeometry(10, 10);
@@ -66,6 +74,27 @@ const pelletMaterial = new THREE.MeshPhongMaterial({
   emissiveIntensity: 0.5,
 }); // Glowing green for dungeon treasure
 const pellets = [];
+const pelletScoreValue = 10;
+let score = 0;
+let isStartingNewGame = false;
+
+const scoreDisplay = document.createElement("div");
+scoreDisplay.style.position = "fixed";
+scoreDisplay.style.top = "12px";
+scoreDisplay.style.left = "12px";
+scoreDisplay.style.color = "#ffffff";
+scoreDisplay.style.fontFamily = "Arial, sans-serif";
+scoreDisplay.style.fontSize = "20px";
+scoreDisplay.style.fontWeight = "bold";
+scoreDisplay.style.textShadow = "0 1px 3px rgba(0, 0, 0, 0.8)";
+scoreDisplay.style.zIndex = "10";
+document.body.appendChild(scoreDisplay);
+
+function updateScoreDisplay() {
+  scoreDisplay.textContent = `Score: ${score}`;
+}
+
+updateScoreDisplay();
 
 function addPellet(x, z) {
   const pellet = new THREE.Mesh(pelletGeometry, pelletMaterial);
@@ -74,54 +103,86 @@ function addPellet(x, z) {
   pellets.push(pellet);
 }
 
-// Scatter glowing pellets throughout the dungeon
-addPellet(-4, -4);
-addPellet(-4, 0);
-addPellet(-4, 4);
-addPellet(0, -4);
-addPellet(0, 4);
-addPellet(4, -4);
-addPellet(4, 0);
-addPellet(4, 4);
-addPellet(-2, -2);
-addPellet(2, 2);
+const pelletPositions = [
+  [-4, -4],
+  [-4, 0],
+  [-4, 4],
+  [0, -4],
+  [0, 4],
+  [4, -4],
+  [4, 0],
+  [4, 4],
+  [-3, -2],
+  [3, 2],
+];
 
-// Camera position (closer and lower for a dungeon perspective)
-camera.position.set(0, 3, 8);
+function spawnPellets() {
+  for (let i = pellets.length - 1; i >= 0; i--) {
+    scene.remove(pellets[i]);
+    pellets.splice(i, 1);
+  }
+
+  pelletPositions.forEach(([x, z]) => {
+    addPellet(x, z);
+  });
+}
+
+// Scatter glowing pellets throughout the dungeon
+spawnPellets();
+
+// Camera position (top-down view)
+camera.position.set(0, 12, 0.01);
 camera.lookAt(0, 0, 0);
 
 // Add OrbitControls for mouse rotation
 const OrbitControls = THREE.OrbitControls; // Ensure Three.js includes OrbitControls
 const controls = new OrbitControls(camera, renderer.domElement);
 controls.target.set(0, 0, 0); // Focus on the center of the maze
-controls.enablePan = false; // Disable panning if you want only rotation
-controls.enableZoom = false; // Disable zooming if desired
+controls.enableRotate = false;
+controls.enablePan = false;
+controls.enableZoom = false;
 controls.update();
 
 // Movement controls
 const keys = {};
 window.addEventListener("keydown", (e) => {
   keys[e.key] = true;
-  console.log(`Key down: ${e.key}`); // Debug: Log key presses
 });
 window.addEventListener("keyup", (e) => {
   keys[e.key] = false;
-  console.log(`Key up: ${e.key}`); // Debug: Log key releases
+});
+
+const mobileButtons = document.querySelectorAll(".ctrlBtn");
+mobileButtons.forEach((button) => {
+  const moveKey = button.dataset.key;
+  if (!moveKey) return;
+
+  button.addEventListener("pointerdown", (e) => {
+    e.preventDefault();
+    keys[moveKey] = true;
+  });
+
+  const releaseMove = (e) => {
+    e.preventDefault();
+    keys[moveKey] = false;
+  };
+
+  button.addEventListener("pointerup", releaseMove);
+  button.addEventListener("pointercancel", releaseMove);
+  button.addEventListener("pointerleave", releaseMove);
 });
 
 const speed = 0.1;
 
 // Collision detection with walls
 function checkWallCollision(newX, newZ) {
-  const pacmanBox = new THREE.Box3().setFromObject(pacman);
-  pacmanBox.min.x = newX - 0.5;
-  pacmanBox.max.x = newX + 0.5;
-  pacmanBox.min.z = newZ - 0.5;
-  pacmanBox.max.z = newZ + 0.5;
+  const pacmanBox = new THREE.Box3(
+    new THREE.Vector3(newX - 0.3, 0, newZ - 0.3),
+    new THREE.Vector3(newX + 0.3, 1, newZ + 0.3),
+  );
 
   for (let wall of walls) {
-    const wallBox = new THREE.Box3().setFromObject(wall);
-    if (pacmanBox.intersectsBox(wallBox)) {
+    if (pacmanBox.intersectsBox(wall.userData.box)) {
       return true;
     }
   }
@@ -130,23 +191,34 @@ function checkWallCollision(newX, newZ) {
 
 // Check for pellet collection
 function checkPelletCollision() {
-  const pacmanBox = new THREE.Box3().setFromObject(pacman);
   for (let i = pellets.length - 1; i >= 0; i--) {
     const pellet = pellets[i];
-    const pelletBox = new THREE.Box3().setFromObject(pellet);
-    if (pacmanBox.intersectsBox(pelletBox)) {
+    const dx = pacman.position.x - pellet.position.x;
+    const dz = pacman.position.z - pellet.position.z;
+    if (dx * dx + dz * dz < 0.45) {
       scene.remove(pellet);
       pellets.splice(i, 1); // Remove eaten pellet
+      score += pelletScoreValue;
+      updateScoreDisplay();
     }
   }
+}
+
+function startNewGame() {
+  isStartingNewGame = true;
+
+  setTimeout(() => {
+    score = 0;
+    updateScoreDisplay();
+    pacman.position.set(-4, 0.5, -4);
+    spawnPellets();
+    isStartingNewGame = false;
+  }, 600);
 }
 
 // Animation loop
 function animate() {
   requestAnimationFrame(animate);
-
-  // Debug: Log to confirm animation loop is running
-  console.log("Animating...");
 
   // Move Pac-Man based on key presses
   let newX = pacman.position.x;
@@ -157,12 +229,20 @@ function animate() {
   if (keys["ArrowLeft"]) newX -= speed;
   if (keys["ArrowRight"]) newX += speed;
 
+  // Keep player inside play area
+  newX = Math.max(-4.4, Math.min(4.4, newX));
+  newZ = Math.max(-4.4, Math.min(4.4, newZ));
+
   // Check for collisions before moving
   if (!checkWallCollision(newX, pacman.position.z)) pacman.position.x = newX;
   if (!checkWallCollision(pacman.position.x, newZ)) pacman.position.z = newZ;
 
   // Check for pellet collection
   checkPelletCollision();
+
+  if (pellets.length === 0 && !isStartingNewGame) {
+    startNewGame();
+  }
 
   // Update controls (required for OrbitControls)
   controls.update();
