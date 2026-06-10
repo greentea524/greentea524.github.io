@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html>
   <head>
     <title>Invasion</title>
@@ -29,8 +29,14 @@
         margin: 10px 0;
         font-size: clamp(1.5rem, 4vw, 2rem);
       }
+      #topBar {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 8px;
+      }
       #instructionsBtn {
-        margin: 5px;
+        margin: 0;
         padding: 5px 10px;
         cursor: pointer;
         font-size: clamp(0.8rem, 2vw, 1rem);
@@ -69,17 +75,14 @@
         user-select: none;
       }
       #restartBtn {
-        display: none;
-        position: absolute;
-        top: 60%;
-        padding: 10px 20px;
-        font-size: clamp(1rem, 3vw, 1.5rem);
+        display: inline-block;
+        padding: 5px 10px;
+        font-size: clamp(0.8rem, 2vw, 1rem);
         background: white;
         color: black;
         border: none;
         border-radius: 5px;
         cursor: pointer;
-        z-index: 10;
       }
       @media (min-width: 768px) {
         #touchControls {
@@ -89,10 +92,12 @@
     </style>
   </head>
   <body>
-    <h2>Invasion</h2>
+    <div id="topBar">
+      <h2>Invasion</h2>
+      <button id="instructionsBtn">Instructions</button>
+      <button id="restartBtn">Restart</button>
+    </div>
     <canvas id="gameCanvas"></canvas>
-    <button id="instructionsBtn">Instructions</button>
-    <button id="restartBtn">Restart</button>
     <div id="instructions">
       <h3>Instructions</h3>
       <ul>
@@ -103,7 +108,13 @@
         <li>Spacebar/Click: Shoot (Desktop)</li>
         <li>White jet: You</li>
         <li>Green ships: Enemy</li>
+        <li>Large dark ship: Boss (multi-hit)</li>
         <li>Red shots: Your bullets</li>
+        <li>Cyan crate: Weapon upgrade pickup</li>
+        <li>1st pickup: Dual missiles (permanent)</li>
+        <li>2nd pickup+: Triple-shot (permanent)</li>
+        <li>Every 3rd shot: Mini bomb splash hit</li>
+        <li>Gold coin: Bonus points after max weapon</li>
         <li>Score +10 per hit</li>
         <li>Game ends if enemy reach bottom</li>
       </ul>
@@ -136,6 +147,11 @@
       const bulletSpeed = 7;
       const bulletWidth = 4;
       const bulletHeight = 10;
+      const miniBombs = [];
+      const miniBombSpeed = 5;
+      const miniBombRadius = 6;
+      const miniBombBlastRadius = 60;
+      let fireCount = 0;
       let bulletsShot = 0;
       let hits = 0;
       let canShoot = true;
@@ -146,9 +162,27 @@
       const alienSpeed = 1;
       let alienDirection = 1;
 
+      const bossMaxHp = 12;
+      let boss = null;
+
       const particles = [];
       const particleCount = 20;
       const particleLifetime = 30;
+
+      const powerUps = [];
+      const powerUpSize = 16;
+      const powerUpSpeed = 2;
+      const powerUpDropChance = 0.15;
+
+      const coins = [];
+      const coinRadius = 7;
+      const coinSpeed = 2.5;
+      const coinDropChance = 0.35;
+      const coinValue = 25;
+      let coinsCollected = 0;
+
+      let weaponLevel = 1;
+      let waveNumber = 1;
 
       let score = 0;
       let gameOver = false;
@@ -156,6 +190,8 @@
       let rightPressed = false;
       let leftPressed = false;
       let spacePressed = false;
+
+      let audioContext = null;
 
       function resizeCanvas() {
         const maxWidth = window.innerWidth * 0.9;
@@ -206,10 +242,87 @@
       rightBtn.addEventListener("touchend", () => (rightPressed = false));
       shootBtn.addEventListener("touchstart", (e) => {
         e.preventDefault();
+        initAudio();
         if (!gameOver && canShoot) shootBullet();
       });
 
+      function initAudio() {
+        if (!audioContext) {
+          const AudioCtx = window.AudioContext || window.webkitAudioContext;
+          if (!AudioCtx) return;
+          audioContext = new AudioCtx();
+        }
+
+        if (audioContext.state === "suspended") {
+          audioContext.resume().catch(() => {});
+        }
+      }
+
+      function playAlienHitSound() {
+        if (!audioContext) return;
+
+        const now = audioContext.currentTime;
+        const oscillator = audioContext.createOscillator();
+        const gainNode = audioContext.createGain();
+
+        oscillator.type = "square";
+        oscillator.frequency.setValueAtTime(780, now);
+        oscillator.frequency.exponentialRampToValueAtTime(220, now + 0.08);
+
+        gainNode.gain.setValueAtTime(0.0001, now);
+        gainNode.gain.exponentialRampToValueAtTime(0.16, now + 0.01);
+        gainNode.gain.exponentialRampToValueAtTime(0.0001, now + 0.09);
+
+        oscillator.connect(gainNode);
+        gainNode.connect(audioContext.destination);
+        oscillator.start(now);
+        oscillator.stop(now + 0.1);
+      }
+
+      function playPowerUpCollectSound() {
+        if (!audioContext) return;
+
+        const now = audioContext.currentTime;
+        const oscillator = audioContext.createOscillator();
+        const gainNode = audioContext.createGain();
+
+        oscillator.type = "triangle";
+        oscillator.frequency.setValueAtTime(420, now);
+        oscillator.frequency.exponentialRampToValueAtTime(960, now + 0.12);
+
+        gainNode.gain.setValueAtTime(0.0001, now);
+        gainNode.gain.exponentialRampToValueAtTime(0.14, now + 0.015);
+        gainNode.gain.exponentialRampToValueAtTime(0.0001, now + 0.14);
+
+        oscillator.connect(gainNode);
+        gainNode.connect(audioContext.destination);
+        oscillator.start(now);
+        oscillator.stop(now + 0.15);
+      }
+
+      function playCoinCollectSound() {
+        if (!audioContext) return;
+
+        const now = audioContext.currentTime;
+        const oscillator = audioContext.createOscillator();
+        const gainNode = audioContext.createGain();
+
+        oscillator.type = "sine";
+        oscillator.frequency.setValueAtTime(1100, now);
+        oscillator.frequency.exponentialRampToValueAtTime(1600, now + 0.04);
+
+        gainNode.gain.setValueAtTime(0.0001, now);
+        gainNode.gain.exponentialRampToValueAtTime(0.12, now + 0.005);
+        gainNode.gain.exponentialRampToValueAtTime(0.0001, now + 0.07);
+
+        oscillator.connect(gainNode);
+        gainNode.connect(audioContext.destination);
+        oscillator.start(now);
+        oscillator.stop(now + 0.08);
+      }
+
       function keyDownHandler(e) {
+        initAudio();
         if (e.key === "Right" || e.key === "ArrowRight") rightPressed = true;
         if (e.key === "Left" || e.key === "ArrowLeft") leftPressed = true;
         if (e.key === " ") {
@@ -225,6 +338,7 @@
       }
 
       function mouseClickHandler(e) {
+        initAudio();
         if (!gameOver && canShoot) {
           shootBullet();
         }
@@ -236,7 +350,7 @@
           const mouseX = e.clientX - rect.left;
           player.x = Math.max(
             0,
-            Math.min(mouseX - player.width / 2, canvas.width - player.width)
+            Math.min(mouseX - player.width / 2, canvas.width - player.width),
           );
         }
       }
@@ -250,7 +364,7 @@
         const scaledAlienWidth = alienWidth * scale;
         const scaledAlienHeight = alienHeight * scale;
         const columns = Math.floor(
-          (canvas.width - 60) / (scaledAlienWidth + 20)
+          (canvas.width - 60) / (scaledAlienWidth + 20),
         );
 
         for (let row = 0; row < 3; row++) {
@@ -263,6 +377,25 @@
             });
           }
         }
+
+        createBoss(scale);
+      }
+
+      function createBoss(scale = 1) {
+        const bossWidth = 90 * scale;
+        const bossHeight = 30 * scale;
+        const bossHue = Math.floor(Math.random() * 360);
+        boss = {
+          x: canvas.width / 2 - bossWidth / 2,
+          y: 8 * scale,
+          width: bossWidth,
+          height: bossHeight,
+          hp: bossMaxHp,
+          maxHp: bossMaxHp,
+          bodyColor: `hsl(${bossHue}, 65%, 38%)`,
+          highlightColor: `hsl(${bossHue}, 70%, 62%)`,
+          tentacleColor: `hsl(${bossHue}, 72%, 32%)`,
+        };
       }
 
       function createFireworks(x, y) {
@@ -299,6 +432,22 @@
         });
       }
 
+      function drawMiniBombs() {
+        miniBombs.forEach((bomb) => {
+          ctx.fillStyle = "#ff8c00";
+          ctx.beginPath();
+          ctx.arc(bomb.x, bomb.y, miniBombRadius, 0, Math.PI * 2);
+          ctx.fill();
+
+          ctx.strokeStyle = "#ffd27f";
+          ctx.lineWidth = 2;
+          ctx.beginPath();
+          ctx.moveTo(bomb.x, bomb.y - miniBombRadius);
+          ctx.lineTo(bomb.x, bomb.y - miniBombRadius - 5);
+          ctx.stroke();
+        });
+      }
+
       function drawAliens() {
         ctx.fillStyle = "green";
         aliens.forEach((alien) => {
@@ -308,18 +457,101 @@
             alien.y + alien.height / 3,
             alien.width / 4,
             Math.PI,
-            0
+            0,
           );
           ctx.moveTo(alien.x, alien.y + alien.height);
           ctx.lineTo(alien.x + alien.width / 4, alien.y + alien.height / 3);
           ctx.lineTo(
             alien.x + (alien.width * 3) / 4,
-            alien.y + alien.height / 3
+            alien.y + alien.height / 3,
           );
           ctx.lineTo(alien.x + alien.width, alien.y + alien.height);
           ctx.closePath();
           ctx.fill();
         });
+      }
+
+      function drawBoss() {
+        if (!boss) return;
+
+        ctx.save();
+        ctx.globalAlpha = 0.85;
+
+        const cx = boss.x + boss.width / 2;
+        const headRadius = boss.width * 0.28;
+        const headCenterY = boss.y + boss.height * 0.45;
+
+        // Octopus head
+        ctx.fillStyle = boss.bodyColor;
+        ctx.beginPath();
+        ctx.arc(cx, headCenterY, headRadius, Math.PI, 0);
+        ctx.lineTo(boss.x + boss.width * 0.78, boss.y + boss.height * 0.72);
+        ctx.quadraticCurveTo(
+          cx,
+          boss.y + boss.height * 0.92,
+          boss.x + boss.width * 0.22,
+          boss.y + boss.height * 0.72,
+        );
+        ctx.closePath();
+        ctx.fill();
+
+        // Head highlight
+        ctx.fillStyle = boss.highlightColor;
+        ctx.beginPath();
+        ctx.arc(
+          boss.x + boss.width * 0.42,
+          boss.y + boss.height * 0.33,
+          headRadius * 0.35,
+          0,
+          Math.PI * 2,
+        );
+        ctx.fill();
+
+        // Eyes
+        const eyeY = boss.y + boss.height * 0.52;
+        const leftEyeX = boss.x + boss.width * 0.42;
+        const rightEyeX = boss.x + boss.width * 0.58;
+        const eyeRadius = boss.width * 0.045;
+
+        ctx.fillStyle = "#fff";
+        ctx.beginPath();
+        ctx.arc(leftEyeX, eyeY, eyeRadius, 0, Math.PI * 2);
+        ctx.arc(rightEyeX, eyeY, eyeRadius, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.fillStyle = "#111";
+        ctx.beginPath();
+        ctx.arc(leftEyeX, eyeY, eyeRadius * 0.45, 0, Math.PI * 2);
+        ctx.arc(rightEyeX, eyeY, eyeRadius * 0.45, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Tentacles
+        ctx.strokeStyle = boss.tentacleColor;
+        ctx.lineWidth = Math.max(2, boss.width * 0.04);
+        const baseY = boss.y + boss.height * 0.72;
+        for (let i = 0; i < 6; i++) {
+          const t = i / 5;
+          const startX = boss.x + boss.width * (0.2 + t * 0.6);
+          const swing = (i % 2 === 0 ? -1 : 1) * boss.width * 0.05;
+          ctx.beginPath();
+          ctx.moveTo(startX, baseY);
+          ctx.bezierCurveTo(
+            startX + swing,
+            baseY + boss.height * 0.18,
+            startX - swing,
+            baseY + boss.height * 0.3,
+            startX,
+            baseY + boss.height * 0.42,
+          );
+          ctx.stroke();
+        }
+        ctx.restore();
+
+        const hpRatio = Math.max(0, boss.hp / boss.maxHp);
+        ctx.fillStyle = "#222";
+        ctx.fillRect(boss.x, boss.y - 8, boss.width, 4);
+        ctx.fillStyle = "#ff4040";
+        ctx.fillRect(boss.x, boss.y - 8, boss.width * hpRatio, 4);
       }
 
       function drawParticles() {
@@ -340,13 +572,100 @@
         });
       }
 
+      function drawPowerUps() {
+        ctx.fillStyle = "cyan";
+        powerUps.forEach((powerUp) => {
+          ctx.fillRect(powerUp.x, powerUp.y, powerUpSize, powerUpSize);
+          ctx.fillStyle = "black";
+          ctx.fillRect(powerUp.x + 6, powerUp.y + 3, 4, 10);
+          ctx.fillRect(powerUp.x + 3, powerUp.y + 6, 10, 4);
+          ctx.fillStyle = "cyan";
+        });
+      }
+
+      function drawCoins() {
+        coins.forEach((coin) => {
+          ctx.fillStyle = "gold";
+          ctx.beginPath();
+          ctx.arc(coin.x, coin.y, coinRadius, 0, Math.PI * 2);
+          ctx.fill();
+
+          ctx.strokeStyle = "#7a5a00";
+          ctx.lineWidth = 2;
+          ctx.beginPath();
+          ctx.arc(coin.x, coin.y, coinRadius - 1, 0, Math.PI * 2);
+          ctx.stroke();
+        });
+      }
+
+      function applyWeaponUpgrade() {
+        weaponLevel = Math.min(3, weaponLevel + 1);
+        if (weaponLevel === 3) {
+          powerUps.length = 0;
+        }
+      }
+
+      function explodeMiniBomb(x, y) {
+        createFireworks(x, y);
+        createFireworks(x + 8, y + 8);
+
+        for (let i = aliens.length - 1; i >= 0; i--) {
+          const alien = aliens[i];
+          const alienCenterX = alien.x + alien.width / 2;
+          const alienCenterY = alien.y + alien.height / 2;
+          const distance = Math.hypot(alienCenterX - x, alienCenterY - y);
+
+          if (distance <= miniBombBlastRadius) {
+            aliens.splice(i, 1);
+            score += 10;
+            hits++;
+            playAlienHitSound();
+          }
+        }
+      }
+
       function shootBullet() {
-        if (bullets.length < 5) {
-          bullets.push({
-            x: player.x + player.width / 2 - bulletWidth / 2,
-            y: player.y - bulletHeight,
-          });
-          bulletsShot++;
+        const bulletsPerShot = weaponLevel;
+        if (bullets.length <= 6 - bulletsPerShot) {
+          fireCount++;
+
+          if (weaponLevel === 3) {
+            bullets.push({
+              x: player.x + player.width * 0.2 - bulletWidth / 2,
+              y: player.y - bulletHeight,
+            });
+            bullets.push({
+              x: player.x + player.width / 2 - bulletWidth / 2,
+              y: player.y - bulletHeight,
+            });
+            bullets.push({
+              x: player.x + player.width * 0.8 - bulletWidth / 2,
+              y: player.y - bulletHeight,
+            });
+          } else if (weaponLevel === 2) {
+            bullets.push({
+              x: player.x + player.width * 0.25 - bulletWidth / 2,
+              y: player.y - bulletHeight,
+            });
+            bullets.push({
+              x: player.x + player.width * 0.75 - bulletWidth / 2,
+              y: player.y - bulletHeight,
+            });
+          } else {
+            bullets.push({
+              x: player.x + player.width / 2 - bulletWidth / 2,
+              y: player.y - bulletHeight,
+            });
+          }
+
+          if (fireCount % 3 === 0) {
+            miniBombs.push({
+              x: player.x + player.width / 2,
+              y: player.y - bulletHeight,
+            });
+          }
+
+          bulletsShot += bulletsPerShot;
           canShoot = false;
           setTimeout(() => (canShoot = true), 200);
         }
@@ -358,11 +677,18 @@
         bulletsShot = 0;
         hits = 0;
         bullets.length = 0;
+        miniBombs.length = 0;
         aliens.length = 0;
         particles.length = 0;
+        powerUps.length = 0;
+        coins.length = 0;
+        coinsCollected = 0;
+        fireCount = 0;
+        boss = null;
+        weaponLevel = 1;
+        waveNumber = 1;
         player.x = canvas.width / 2 - player.width / 2;
         resizeCanvas();
-        restartBtn.style.display = "none";
         gameLoop();
       }
 
@@ -384,6 +710,45 @@
           if (bullet.y < 0) bullets.splice(index, 1);
         });
 
+        for (let i = miniBombs.length - 1; i >= 0; i--) {
+          const bomb = miniBombs[i];
+          bomb.y -= miniBombSpeed;
+
+          if (bomb.y + miniBombRadius < 0) {
+            miniBombs.splice(i, 1);
+            continue;
+          }
+
+          let exploded = false;
+          for (let j = 0; j < aliens.length; j++) {
+            const alien = aliens[j];
+            if (
+              bomb.x + miniBombRadius > alien.x &&
+              bomb.x - miniBombRadius < alien.x + alien.width &&
+              bomb.y + miniBombRadius > alien.y &&
+              bomb.y - miniBombRadius < alien.y + alien.height
+            ) {
+              explodeMiniBomb(bomb.x, bomb.y);
+              miniBombs.splice(i, 1);
+              exploded = true;
+              break;
+            }
+          }
+
+          if (exploded) continue;
+
+          if (
+            boss &&
+            bomb.x + miniBombRadius > boss.x &&
+            bomb.x - miniBombRadius < boss.x + boss.width &&
+            bomb.y + miniBombRadius > boss.y &&
+            bomb.y - miniBombRadius < boss.y + boss.height
+          ) {
+            explodeMiniBomb(bomb.x, bomb.y);
+            miniBombs.splice(i, 1);
+          }
+        }
+
         let hitEdge = false;
         aliens.forEach((alien) => {
           alien.x += alienSpeed * alienDirection;
@@ -395,11 +760,24 @@
           }
         });
 
+        if (boss) {
+          boss.x += alienSpeed * 0.7 * alienDirection;
+          if (boss.x + boss.width > canvas.width || boss.x < 0) {
+            hitEdge = true;
+          }
+          if (boss.y + boss.height > canvas.height) {
+            gameOver = true;
+          }
+        }
+
         if (hitEdge) {
           alienDirection *= -1;
           aliens.forEach((alien) => {
             alien.y += 20;
           });
+          if (boss) {
+            boss.y += 12;
+          }
         }
 
         bullets.forEach((bullet, bIndex) => {
@@ -411,12 +789,90 @@
               bullet.y + bulletHeight > alien.y
             ) {
               createFireworks(alien.x, alien.y);
+              playAlienHitSound();
+              if (weaponLevel < 3 && Math.random() < powerUpDropChance) {
+                powerUps.push({
+                  x: alien.x + alien.width / 2 - powerUpSize / 2,
+                  y: alien.y + alien.height / 2 - powerUpSize / 2,
+                });
+              } else if (weaponLevel === 3 && Math.random() < coinDropChance) {
+                coins.push({
+                  x: alien.x + alien.width / 2,
+                  y: alien.y + alien.height / 2,
+                });
+              }
               aliens.splice(aIndex, 1);
               bullets.splice(bIndex, 1);
               score += 10;
               hits++;
             }
           });
+        });
+
+        bullets.forEach((bullet, bIndex) => {
+          if (
+            boss &&
+            bullet.x < boss.x + boss.width &&
+            bullet.x + bulletWidth > boss.x &&
+            bullet.y < boss.y + boss.height &&
+            bullet.y + bulletHeight > boss.y
+          ) {
+            playAlienHitSound();
+            boss.hp--;
+            bullets.splice(bIndex, 1);
+            hits++;
+            score += 5;
+
+            if (boss.hp <= 0) {
+              createFireworks(
+                boss.x + boss.width / 2,
+                boss.y + boss.height / 2,
+              );
+              createFireworks(
+                boss.x + boss.width / 2 + 10,
+                boss.y + boss.height / 2,
+              );
+              score += 120;
+              boss = null;
+            }
+          }
+        });
+
+        powerUps.forEach((powerUp, index) => {
+          powerUp.y += powerUpSpeed;
+
+          const collected =
+            powerUp.x < player.x + player.width &&
+            powerUp.x + powerUpSize > player.x &&
+            powerUp.y < player.y + player.height &&
+            powerUp.y + powerUpSize > player.y;
+
+          if (collected) {
+            applyWeaponUpgrade();
+            playPowerUpCollectSound();
+            powerUps.splice(index, 1);
+          } else if (powerUp.y > canvas.height) {
+            powerUps.splice(index, 1);
+          }
+        });
+
+        coins.forEach((coin, index) => {
+          coin.y += coinSpeed;
+
+          const collected =
+            coin.x + coinRadius > player.x &&
+            coin.x - coinRadius < player.x + player.width &&
+            coin.y + coinRadius > player.y &&
+            coin.y - coinRadius < player.y + player.height;
+
+          if (collected) {
+            score += coinValue;
+            coinsCollected++;
+            playCoinCollectSound();
+            coins.splice(index, 1);
+          } else if (coin.y - coinRadius > canvas.height) {
+            coins.splice(index, 1);
+          }
         });
       }
 
@@ -429,6 +885,18 @@
         ctx.fillText(`Hit Rate: ${hitRate}%`, 10, 40);
         ctx.fillText(`Shots: ${bulletsShot}`, 10, 60);
         ctx.fillText(`Hits: ${hits}`, 10, 80);
+        ctx.fillText(`Coins: ${coinsCollected}`, 10, 100);
+        if (boss) {
+          ctx.fillText(`Boss HP: ${boss.hp}`, 10, 120);
+        }
+        ctx.fillText(`Wave: ${waveNumber}`, canvas.width - 120, 20);
+        const weaponStatus =
+          weaponLevel === 1
+            ? "Single Shot"
+            : weaponLevel === 2
+              ? "Dual Missile"
+              : "Triple Shot";
+        ctx.fillText(`Weapon: ${weaponStatus}`, 10, boss ? 140 : 120);
       }
 
       function gameLoop() {
@@ -441,14 +909,13 @@
           ctx.fillText(
             `Final Score: ${score}`,
             canvas.width / 2 - 80,
-            canvas.height / 2 + 40
+            canvas.height / 2 + 40,
           );
           ctx.fillText(
             `Hit Rate: ${hitRate}%`,
             canvas.width / 2 - 80,
-            canvas.height / 2 + 80
+            canvas.height / 2 + 80,
           );
-          restartBtn.style.display = "block";
           return;
         }
 
@@ -456,12 +923,17 @@
 
         drawPlayer();
         drawBullets();
+        drawMiniBombs();
+        drawPowerUps();
+        drawCoins();
+        drawBoss();
         drawAliens();
         drawParticles();
         drawStats();
         update();
 
         if (aliens.length === 0) {
+          waveNumber++;
           createAliens(canvas.width / 800);
         }
 
