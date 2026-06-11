@@ -202,6 +202,13 @@
       let waveNumber = 1;
 
       let score = 0;
+      let scoreFlashFrames = 0;
+      const scorePopups = [];
+      let comboCount = 0;
+      let comboTimerFrames = 0;
+      const comboWindowFrames = 90;
+      const comboStepHits = 3;
+      const maxComboMultiplier = 6;
       let gameOver = false;
 
       let rightPressed = false;
@@ -265,7 +272,7 @@
       // Desktop controls
       document.addEventListener("keydown", keyDownHandler);
       document.addEventListener("keyup", keyUpHandler);
-      canvas.addEventListener("click", mouseClickHandler);
+      canvas.addEventListener("pointerdown", pointerDownHandler);
       canvas.addEventListener("mousemove", mouseMoveHandler);
       instructionsBtn.addEventListener("click", toggleInstructions);
       restartBtn.addEventListener("click", restartGame);
@@ -372,7 +379,7 @@
         if (e.key === " ") spacePressed = false;
       }
 
-      function mouseClickHandler(e) {
+      function pointerDownHandler(e) {
         initAudio();
         if (!gameOver && canShoot) {
           shootBullet();
@@ -633,6 +640,72 @@
         });
       }
 
+      function getComboMultiplier(streak) {
+        return Math.min(
+          maxComboMultiplier,
+          1 + Math.floor(Math.max(streak - 1, 0) / comboStepHits),
+        );
+      }
+
+      function addScore(
+        points,
+        x,
+        y,
+        color = "#ffd54a",
+        countsForCombo = true,
+      ) {
+        if (countsForCombo) {
+          comboCount = comboTimerFrames > 0 ? comboCount + 1 : 1;
+          comboTimerFrames = comboWindowFrames;
+        }
+
+        const comboMultiplier = countsForCombo
+          ? getComboMultiplier(comboCount)
+          : 1;
+        const finalPoints = points * comboMultiplier;
+
+        score += finalPoints;
+        scoreFlashFrames = Math.min(26, 10 + comboMultiplier * 3);
+
+        if (Number.isFinite(x) && Number.isFinite(y)) {
+          scorePopups.push({
+            x,
+            y,
+            text:
+              comboMultiplier > 1
+                ? `+${finalPoints} x${comboMultiplier}`
+                : `+${finalPoints}`,
+            life: 32,
+            color,
+          });
+        }
+      }
+
+      function drawScorePopups() {
+        const scale = canvas.width / 800;
+        for (let i = scorePopups.length - 1; i >= 0; i--) {
+          const popup = scorePopups[i];
+          popup.y -= 0.85;
+          popup.life--;
+
+          const alpha = Math.max(popup.life / 32, 0);
+          ctx.save();
+          ctx.globalAlpha = alpha;
+          ctx.font = `${14 * scale}px Arial`;
+          ctx.textAlign = "center";
+          ctx.strokeStyle = "rgba(0, 0, 0, 0.55)";
+          ctx.lineWidth = 3;
+          ctx.strokeText(popup.text, popup.x, popup.y);
+          ctx.fillStyle = popup.color;
+          ctx.fillText(popup.text, popup.x, popup.y);
+          ctx.restore();
+
+          if (popup.life <= 0) {
+            scorePopups.splice(i, 1);
+          }
+        }
+      }
+
       function applyWeaponUpgrade() {
         weaponLevel = Math.min(3, weaponLevel + 1);
         if (weaponLevel === 3) {
@@ -652,7 +725,7 @@
 
           if (distance <= miniBombBlastRadius) {
             aliens.splice(i, 1);
-            score += 10;
+            addScore(10, alienCenterX, alienCenterY, "#ffb347");
             hits++;
             playAlienHitSound();
           }
@@ -717,17 +790,25 @@
         particles.length = 0;
         powerUps.length = 0;
         coins.length = 0;
+        scorePopups.length = 0;
         coinsCollected = 0;
         fireCount = 0;
         boss = null;
         weaponLevel = 1;
         waveNumber = 1;
+        comboCount = 0;
+        comboTimerFrames = 0;
         player.x = canvas.width / 2 - player.width / 2;
         resizeCanvas();
         gameLoop();
       }
 
       function update() {
+        if (comboTimerFrames > 0) {
+          comboTimerFrames--;
+          if (comboTimerFrames === 0) comboCount = 0;
+        }
+
         if (rightPressed && player.x < canvas.width - player.width) {
           player.x += player.speed;
         }
@@ -815,8 +896,12 @@
           }
         }
 
-        bullets.forEach((bullet, bIndex) => {
-          aliens.forEach((alien, aIndex) => {
+        for (let bIndex = bullets.length - 1; bIndex >= 0; bIndex--) {
+          const bullet = bullets[bIndex];
+          let hitAlien = false;
+
+          for (let aIndex = aliens.length - 1; aIndex >= 0; aIndex--) {
+            const alien = aliens[aIndex];
             if (
               bullet.x < alien.x + alien.width &&
               bullet.x + bulletWidth > alien.x &&
@@ -838,13 +923,19 @@
               }
               aliens.splice(aIndex, 1);
               bullets.splice(bIndex, 1);
-              score += 10;
+              addScore(
+                10,
+                alien.x + alien.width / 2,
+                alien.y + alien.height / 2,
+              );
               hits++;
+              hitAlien = true;
+              break;
             }
-          });
-        });
+          }
 
-        bullets.forEach((bullet, bIndex) => {
+          if (hitAlien || !bullets[bIndex]) continue;
+
           if (
             boss &&
             bullet.x < boss.x + boss.width &&
@@ -856,7 +947,7 @@
             boss.hp--;
             bullets.splice(bIndex, 1);
             hits++;
-            score += 5;
+            addScore(5, bullet.x, bullet.y, "#9be7ff");
 
             if (boss.hp <= 0) {
               createFireworks(
@@ -867,11 +958,16 @@
                 boss.x + boss.width / 2 + 10,
                 boss.y + boss.height / 2,
               );
-              score += 120;
+              addScore(
+                120,
+                boss.x + boss.width / 2,
+                boss.y + boss.height / 2,
+                "#7af58f",
+              );
               boss = null;
             }
           }
-        });
+        }
 
         powerUps.forEach((powerUp, index) => {
           powerUp.y += powerUpSpeed;
@@ -901,7 +997,7 @@
             coin.y - coinRadius < player.y + player.height;
 
           if (collected) {
-            score += coinValue;
+            addScore(coinValue, coin.x, coin.y, "#ffe066", false);
             coinsCollected++;
             playCoinCollectSound();
             coins.splice(index, 1);
@@ -912,9 +1008,44 @@
       }
 
       function drawStats() {
+        const scale = canvas.width / 800;
+        const scoreX = canvas.width - 12 * scale;
+        const scoreY = 24 * scale;
+        const pulseScale = 1 + scoreFlashFrames * 0.01;
+
+        ctx.save();
+        ctx.textAlign = "right";
+        ctx.textBaseline = "top";
+        ctx.font = `bold ${Math.round(26 * scale * pulseScale)}px monospace`;
+        ctx.fillStyle = "#ffe066";
+        ctx.strokeStyle = "rgba(0, 0, 0, 0.6)";
+        ctx.lineWidth = 5;
+        ctx.shadowColor = "rgba(255, 224, 102, 0.65)";
+        ctx.shadowBlur = 14;
+        ctx.strokeText(`Score ${score}`, scoreX, scoreY);
+        ctx.fillText(`Score ${score}`, scoreX, scoreY);
+
+        const comboMultiplier = getComboMultiplier(comboCount);
+        if (comboCount >= 2 && comboTimerFrames > 0) {
+          const comboAlpha =
+            0.55 + 0.45 * (comboTimerFrames / comboWindowFrames);
+          ctx.globalAlpha = comboAlpha;
+          ctx.font = `bold ${Math.round(16 * scale)}px monospace`;
+          ctx.shadowBlur = 10;
+          ctx.shadowColor = "rgba(87, 219, 255, 0.7)";
+          ctx.fillStyle = "#57dbff";
+          ctx.strokeStyle = "rgba(0, 0, 0, 0.65)";
+          ctx.lineWidth = 3;
+          const comboText = `COMBO x${comboMultiplier} (${comboCount})`;
+          ctx.strokeText(comboText, scoreX, scoreY + 32 * scale);
+          ctx.fillText(comboText, scoreX, scoreY + 32 * scale);
+        }
+        ctx.restore();
+
+        if (scoreFlashFrames > 0) scoreFlashFrames--;
+
         ctx.fillStyle = "white";
-        ctx.font = `${16 * (canvas.width / 800)}px Arial`;
-        ctx.fillText(`Score: ${score}`, 10, 20);
+        ctx.font = `${16 * scale}px Arial`;
         const hitRate =
           bulletsShot > 0 ? ((hits / bulletsShot) * 100).toFixed(1) : 0;
         ctx.fillText(`Hit Rate: ${hitRate}%`, 10, 40);
@@ -964,6 +1095,7 @@
         drawBoss();
         drawAliens();
         drawParticles();
+        drawScorePopups();
         drawStats();
         update();
 
