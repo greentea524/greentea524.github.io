@@ -223,7 +223,7 @@
         ).matches;
 
         const topBarHeight = topBar ? topBar.getBoundingClientRect().height : 0;
-        const reservedControlsHeight = isMobileLayout ? 132 : 24;
+        const reservedControlsHeight = isMobileLayout ? 118 : 24;
         const horizontalPadding = isMobileLayout ? 16 : 40;
         const verticalPadding = isMobileLayout ? 24 : 40;
 
@@ -235,7 +235,7 @@
             reservedControlsHeight -
             verticalPadding,
         );
-        const aspectRatio = 800 / 600;
+        const aspectRatio = isMobileLayout ? 800 / 900 : 800 / 600;
 
         let newWidth = isMobileLayout ? maxWidth : Math.min(maxWidth, 960);
         let newHeight = newWidth / aspectRatio;
