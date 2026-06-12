@@ -133,7 +133,6 @@
         <li>Cyan crate: Weapon upgrade pickup</li>
         <li>1st pickup: Dual missiles (permanent)</li>
         <li>2nd pickup+: Triple-shot (permanent)</li>
-        <li>Every 3rd shot: Mini bomb splash hit</li>
         <li>Gold coin: Bonus points after max weapon</li>
         <li>Score +10 per hit</li>
         <li>Game ends if enemy reach bottom</li>
@@ -168,11 +167,6 @@
       const bulletSpeed = 7;
       const bulletWidth = 4;
       const bulletHeight = 10;
-      const miniBombs = [];
-      const miniBombSpeed = 5;
-      const miniBombRadius = 6;
-      const miniBombBlastRadius = 60;
-      let fireCount = 0;
       let bulletsShot = 0;
       let hits = 0;
       let canShoot = true;
@@ -218,6 +212,8 @@
       let rightPressed = false;
       let leftPressed = false;
       let spacePressed = false;
+      let animationFrameId = null;
+      let isLoopRunning = false;
 
       let audioContext = null;
 
@@ -417,15 +413,19 @@
       function createAliens(scale = 1) {
         const scaledAlienWidth = alienWidth * scale;
         const scaledAlienHeight = alienHeight * scale;
-        const columns = Math.floor(
-          (canvas.width - 60) / (scaledAlienWidth + 20),
+        const sidePadding = 30 * scale;
+        const gap = 20 * scale;
+        const step = scaledAlienWidth + gap;
+        const columns = Math.max(
+          1,
+          Math.floor((canvas.width - sidePadding * 2 + gap) / step),
         );
 
         for (let row = 0; row < 3; row++) {
           for (let col = 0; col < columns; col++) {
             aliens.push({
-              x: col * (scaledAlienWidth + 20 * scale) + 30 * scale,
-              y: row * (scaledAlienHeight + 20 * scale) + 30 * scale,
+              x: sidePadding + col * step,
+              y: sidePadding + row * (scaledAlienHeight + gap),
               width: scaledAlienWidth,
               height: scaledAlienHeight,
             });
@@ -483,22 +483,6 @@
         ctx.fillStyle = "red";
         bullets.forEach((bullet) => {
           ctx.fillRect(bullet.x, bullet.y, bulletWidth, bulletHeight);
-        });
-      }
-
-      function drawMiniBombs() {
-        miniBombs.forEach((bomb) => {
-          ctx.fillStyle = "#ff8c00";
-          ctx.beginPath();
-          ctx.arc(bomb.x, bomb.y, miniBombRadius, 0, Math.PI * 2);
-          ctx.fill();
-
-          ctx.strokeStyle = "#ffd27f";
-          ctx.lineWidth = 2;
-          ctx.beginPath();
-          ctx.moveTo(bomb.x, bomb.y - miniBombRadius);
-          ctx.lineTo(bomb.x, bomb.y - miniBombRadius - 5);
-          ctx.stroke();
         });
       }
 
@@ -725,30 +709,9 @@
         }
       }
 
-      function explodeMiniBomb(x, y) {
-        createFireworks(x, y);
-        createFireworks(x + 8, y + 8);
-
-        for (let i = aliens.length - 1; i >= 0; i--) {
-          const alien = aliens[i];
-          const alienCenterX = alien.x + alien.width / 2;
-          const alienCenterY = alien.y + alien.height / 2;
-          const distance = Math.hypot(alienCenterX - x, alienCenterY - y);
-
-          if (distance <= miniBombBlastRadius) {
-            aliens.splice(i, 1);
-            addScore(10, alienCenterX, alienCenterY, "#ffb347");
-            hits++;
-            playAlienHitSound();
-          }
-        }
-      }
-
       function shootBullet() {
         const bulletsPerShot = weaponLevel;
         if (bullets.length <= 6 - bulletsPerShot) {
-          fireCount++;
-
           if (weaponLevel === 3) {
             bullets.push({
               x: player.x + player.width * 0.2 - bulletWidth / 2,
@@ -778,13 +741,6 @@
             });
           }
 
-          if (fireCount % 3 === 0) {
-            miniBombs.push({
-              x: player.x + player.width / 2,
-              y: player.y - bulletHeight,
-            });
-          }
-
           bulletsShot += bulletsPerShot;
           canShoot = false;
           setTimeout(() => (canShoot = true), 200);
@@ -792,19 +748,23 @@
       }
 
       function restartGame() {
+        if (animationFrameId !== null) {
+          cancelAnimationFrame(animationFrameId);
+          animationFrameId = null;
+        }
+        isLoopRunning = false;
+
         gameOver = false;
         score = 0;
         bulletsShot = 0;
         hits = 0;
         bullets.length = 0;
-        miniBombs.length = 0;
         aliens.length = 0;
         particles.length = 0;
         powerUps.length = 0;
         coins.length = 0;
         scorePopups.length = 0;
         coinsCollected = 0;
-        fireCount = 0;
         boss = null;
         weaponLevel = 1;
         waveNumber = 1;
@@ -812,7 +772,7 @@
         comboTimerFrames = 0;
         player.x = canvas.width / 2 - player.width / 2;
         resizeCanvas();
-        gameLoop();
+        startGameLoop();
       }
 
       function update() {
@@ -837,45 +797,6 @@
           bullet.y -= bulletSpeed;
           if (bullet.y < 0) bullets.splice(index, 1);
         });
-
-        for (let i = miniBombs.length - 1; i >= 0; i--) {
-          const bomb = miniBombs[i];
-          bomb.y -= miniBombSpeed;
-
-          if (bomb.y + miniBombRadius < 0) {
-            miniBombs.splice(i, 1);
-            continue;
-          }
-
-          let exploded = false;
-          for (let j = 0; j < aliens.length; j++) {
-            const alien = aliens[j];
-            if (
-              bomb.x + miniBombRadius > alien.x &&
-              bomb.x - miniBombRadius < alien.x + alien.width &&
-              bomb.y + miniBombRadius > alien.y &&
-              bomb.y - miniBombRadius < alien.y + alien.height
-            ) {
-              explodeMiniBomb(bomb.x, bomb.y);
-              miniBombs.splice(i, 1);
-              exploded = true;
-              break;
-            }
-          }
-
-          if (exploded) continue;
-
-          if (
-            boss &&
-            bomb.x + miniBombRadius > boss.x &&
-            bomb.x - miniBombRadius < boss.x + boss.width &&
-            bomb.y + miniBombRadius > boss.y &&
-            bomb.y - miniBombRadius < boss.y + boss.height
-          ) {
-            explodeMiniBomb(bomb.x, bomb.y);
-            miniBombs.splice(i, 1);
-          }
-        }
 
         let hitEdge = false;
         aliens.forEach((alien) => {
@@ -1079,6 +1000,8 @@
 
       function gameLoop() {
         if (gameOver) {
+          isLoopRunning = false;
+          animationFrameId = null;
           ctx.fillStyle = "white";
           ctx.font = `${30 * (canvas.width / 800)}px Arial`;
           ctx.fillText("Game Over!", canvas.width / 2 - 80, canvas.height / 2);
@@ -1101,7 +1024,6 @@
 
         drawPlayer();
         drawBullets();
-        drawMiniBombs();
         drawPowerUps();
         drawCoins();
         drawBoss();
@@ -1116,10 +1038,16 @@
           createAliens(canvas.width / 800);
         }
 
-        requestAnimationFrame(gameLoop);
+        animationFrameId = requestAnimationFrame(gameLoop);
       }
 
-      gameLoop();
+      function startGameLoop() {
+        if (isLoopRunning) return;
+        isLoopRunning = true;
+        gameLoop();
+      }
+
+      startGameLoop();
     </script>
   </body>
 </html>
