@@ -124,6 +124,14 @@ const spawnZ = -7;
 const gridMin = -Math.floor(playAreaMax);
 const gridMax = Math.floor(playAreaMax);
 
+function randomizeWallColor() {
+  // Keep colors vivid but readable against the dark floor.
+  const hue = Math.random();
+  const saturation = randomBetween(0.35, 0.75);
+  const lightness = randomBetween(0.35, 0.58);
+  wallMaterial.color.setHSL(hue, saturation, lightness);
+}
+
 // Create a winding dungeon maze layout
 const walls = [];
 function addWall(x, y, z, width = 1, depth = 1) {
@@ -585,6 +593,7 @@ function spawnPellets() {
 
 function resetRound() {
   pacman.position.set(spawnX, 0.5, spawnZ);
+  randomizeWallColor();
   buildRandomLabyrinth();
   resetGhosts();
   spawnPellets();
