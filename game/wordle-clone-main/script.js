@@ -15297,10 +15297,7 @@ const keyboard = document.querySelector("[data-keyboard]");
 const alertContainer = document.querySelector("[data-alert-container]");
 const guessGrid = document.querySelector("[data-guess-grid]");
 const guessStatsContainer = document.querySelector("[data-guess-stats]");
-const offsetFromDate = new Date(2022, 0, 1);
-const msOffset = Date.now() - offsetFromDate;
-const dayOffset = msOffset / 1000 / 60 / 60 / 24;
-const targetWord = targetWords[Math.floor(dayOffset)];
+const targetWord = getRandomTargetWord();
 const guessStatsStorageKey = "wordleCloneGuessDistribution";
 
 let guessStats = loadGuessStats();
@@ -15311,6 +15308,11 @@ if (guessStatsContainer != null) {
 }
 
 startInteraction();
+
+function getRandomTargetWord() {
+  const randomIndex = Math.floor(Math.random() * targetWords.length);
+  return targetWords[randomIndex];
+}
 
 function createEmptyGuessStats() {
   return {
