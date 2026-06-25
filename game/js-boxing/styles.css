@@ -116,14 +116,19 @@ select {
   border-radius: 10px;
   height: 210px;
   margin-bottom: 16px;
-  display: flex;
-  align-items: flex-end;
-  justify-content: space-evenly;
+  display: block;
   overflow: hidden;
 }
 
-.fight-stage.impact {
-  animation: stage-shake 0.18s linear;
+.fight-canvas {
+  width: 100%;
+  height: 100%;
+}
+
+.fight-canvas canvas {
+  display: block;
+  width: 100% !important;
+  height: 100% !important;
 }
 
 .boxer {

@@ -61,37 +61,7 @@
         </section>
 
         <section class="fight-stage" aria-label="boxing animation">
-          <div id="player-boxer" class="boxer player-boxer">
-            <div class="boxer-figure">
-              <span class="name-tag">YOU</span>
-              <span class="head">
-                <span class="eye left"></span>
-                <span class="eye right"></span>
-                <span class="mouth"></span>
-              </span>
-              <span class="torso"></span>
-              <span class="arm rear-arm"><span class="glove"></span></span>
-              <span class="arm lead-arm"><span class="glove"></span></span>
-              <span class="legs"></span>
-              <span class="shadow"></span>
-            </div>
-            <span id="glove-badge" class="glove-badge">+0</span>
-          </div>
-          <div id="cpu-boxer" class="boxer cpu-boxer">
-            <div class="boxer-figure">
-              <span id="cpu-face" class="name-tag">CPU</span>
-              <span class="head">
-                <span class="eye left"></span>
-                <span class="eye right"></span>
-                <span class="mouth"></span>
-              </span>
-              <span class="torso"></span>
-              <span class="arm rear-arm"><span class="glove"></span></span>
-              <span class="arm lead-arm"><span class="glove"></span></span>
-              <span class="legs"></span>
-              <span class="shadow"></span>
-            </div>
-          </div>
+          <div id="fight-canvas" class="fight-canvas"></div>
         </section>
 
         <section class="controls">
@@ -114,6 +84,7 @@
       </section>
     </main>
 
+    <script src="https://cdn.babylonjs.com/babylon.js"></script>
     <script src="script.js"></script>
   </body>
 </html>
