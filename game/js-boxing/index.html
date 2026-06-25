@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>JS Boxing</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main class="arena">
+      <h1>JS Boxing: Player vs CPU</h1>
+
+      <section id="menu-screen" class="menu-screen">
+        <h2>Start Game</h2>
+        <p>Choose how you want to begin:</p>
+        <div class="menu-actions">
+          <button id="new-game-btn">New Game</button>
+          <button id="load-game-btn">Load Game</button>
+        </div>
+      </section>
+
+      <section id="game-screen" class="hidden">
+        <section class="rpg-panel">
+          <div class="class-picker">
+            <label for="class-select">Class</label>
+            <select id="class-select">
+              <option value="brawler">Brawler</option>
+              <option value="speedster">Speedster</option>
+              <option value="tank">Tank</option>
+            </select>
+            <button id="apply-class-btn">Apply Class</button>
+          </div>
+          <p class="rpg-stats">
+            <span>Class: <strong id="class-name">Brawler</strong></span>
+            <span>Lv: <strong id="level">1</strong></span>
+            <span>XP: <strong id="xp">0</strong>/<strong id="xp-next">100</strong></span>
+            <span>Gold: <strong id="gold">0</strong></span>
+            <span>Potions: <strong id="potions">0</strong></span>
+            <span>ATK+: <strong id="atk-bonus">2</strong></span>
+            <span>Fight: <strong id="fight-number">1</strong></span>
+            <span>Enemy: <strong id="enemy-type">Normal</strong></span>
+          </p>
+        </section>
+
+        <section class="fighters">
+          <article class="fighter-card">
+            <h2>Player</h2>
+            <p class="hp-text">HP: <span id="player-hp">100</span></p>
+            <div class="hp-bar">
+              <div id="player-bar" class="hp-fill player"></div>
+            </div>
+          </article>
+
+          <article class="fighter-card">
+            <h2 id="cpu-name">CPU</h2>
+            <p class="hp-text">HP: <span id="cpu-hp">100</span></p>
+            <div class="hp-bar">
+              <div id="cpu-bar" class="hp-fill cpu"></div>
+            </div>
+          </article>
+        </section>
+
+        <section class="fight-stage" aria-label="boxing animation">
+          <div id="player-boxer" class="boxer player-boxer">
+            <div class="boxer-figure">
+              <span class="name-tag">YOU</span>
+              <span class="head">
+                <span class="eye left"></span>
+                <span class="eye right"></span>
+                <span class="mouth"></span>
+              </span>
+              <span class="torso"></span>
+              <span class="arm rear-arm"><span class="glove"></span></span>
+              <span class="arm lead-arm"><span class="glove"></span></span>
+              <span class="legs"></span>
+              <span class="shadow"></span>
+            </div>
+            <span id="glove-badge" class="glove-badge">+0</span>
+          </div>
+          <div id="cpu-boxer" class="boxer cpu-boxer">
+            <div class="boxer-figure">
+              <span id="cpu-face" class="name-tag">CPU</span>
+              <span class="head">
+                <span class="eye left"></span>
+                <span class="eye right"></span>
+                <span class="mouth"></span>
+              </span>
+              <span class="torso"></span>
+              <span class="arm rear-arm"><span class="glove"></span></span>
+              <span class="arm lead-arm"><span class="glove"></span></span>
+              <span class="legs"></span>
+              <span class="shadow"></span>
+            </div>
+          </div>
+        </section>
+
+        <section class="controls">
+          <button id="punch-btn" type="button">Punch</button>
+          <button id="auto-btn" type="button">Auto: Off</button>
+          <button id="shop-btn" type="button">Shop</button>
+          <button id="restart-btn" type="button">Next</button>
+        </section>
+
+        <section id="shop-panel" class="shop hidden">
+          <button id="use-potion-btn" type="button">Use Potion (+30 HP)</button>
+          <button id="buy-potion-btn" type="button">Buy Potion (20 Gold)</button>
+          <button id="buy-gloves-btn" type="button">Buy Gloves Upgrade (50 Gold)</button>
+        </section>
+
+        <section class="message-box">
+          <p id="status" class="status">Land the first punch!</p>
+          <ul id="log" class="log"></ul>
+        </section>
+      </section>
+    </main>
+
+    <script src="script.js"></script>
+  </body>
+</html>
