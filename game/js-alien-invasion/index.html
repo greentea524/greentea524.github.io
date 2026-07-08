@@ -212,6 +212,7 @@
       let rightPressed = false;
       let leftPressed = false;
       let spacePressed = false;
+      let wantsToShoot = false;
       let animationFrameId = null;
       let isLoopRunning = false;
 
@@ -355,7 +356,7 @@
       shootBtn.addEventListener("touchstart", (e) => {
         e.preventDefault();
         initAudio();
-        if (!gameOver && canShoot) shootBullet();
+        if (!gameOver) wantsToShoot = true;
       });
 
       function initAudio() {
@@ -440,6 +441,7 @@
         if (e.key === " ") {
           e.preventDefault();
           spacePressed = true;
+          wantsToShoot = true;
         }
       }
 
@@ -451,8 +453,8 @@
 
       function pointerDownHandler(e) {
         initAudio();
-        if (!gameOver && canShoot) {
-          shootBullet();
+        if (!gameOver) {
+          wantsToShoot = true;
         }
       }
 
@@ -944,9 +946,9 @@
           player.x -= player.speed;
         }
 
-        if (spacePressed && canShoot) {
+        if ((spacePressed || wantsToShoot) && canShoot && !gameOver) {
           shootBullet();
-          spacePressed = false;
+          wantsToShoot = false;
         }
 
         bullets.forEach((bullet, index) => {
