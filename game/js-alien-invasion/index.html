@@ -868,40 +868,39 @@
 
       function shootBullet() {
         const bulletsPerShot = weaponLevel;
-        if (bullets.length <= 6 - bulletsPerShot) {
-          if (weaponLevel === 3) {
-            bullets.push({
-              x: player.x + player.width * 0.2 - bulletWidth / 2,
-              y: player.y - bulletHeight,
-            });
-            bullets.push({
-              x: player.x + player.width / 2 - bulletWidth / 2,
-              y: player.y - bulletHeight,
-            });
-            bullets.push({
-              x: player.x + player.width * 0.8 - bulletWidth / 2,
-              y: player.y - bulletHeight,
-            });
-          } else if (weaponLevel === 2) {
-            bullets.push({
-              x: player.x + player.width * 0.25 - bulletWidth / 2,
-              y: player.y - bulletHeight,
-            });
-            bullets.push({
-              x: player.x + player.width * 0.75 - bulletWidth / 2,
-              y: player.y - bulletHeight,
-            });
-          } else {
-            bullets.push({
-              x: player.x + player.width / 2 - bulletWidth / 2,
-              y: player.y - bulletHeight,
-            });
-          }
-
-          bulletsShot += bulletsPerShot;
-          canShoot = false;
-          setTimeout(() => (canShoot = true), 200);
+        
+        if (weaponLevel === 3) {
+          bullets.push({
+            x: player.x + player.width * 0.2 - bulletWidth / 2,
+            y: player.y - bulletHeight,
+          });
+          bullets.push({
+            x: player.x + player.width / 2 - bulletWidth / 2,
+            y: player.y - bulletHeight,
+          });
+          bullets.push({
+            x: player.x + player.width * 0.8 - bulletWidth / 2,
+            y: player.y - bulletHeight,
+          });
+        } else if (weaponLevel === 2) {
+          bullets.push({
+            x: player.x + player.width * 0.25 - bulletWidth / 2,
+            y: player.y - bulletHeight,
+          });
+          bullets.push({
+            x: player.x + player.width * 0.75 - bulletWidth / 2,
+            y: player.y - bulletHeight,
+          });
+        } else {
+          bullets.push({
+            x: player.x + player.width / 2 - bulletWidth / 2,
+            y: player.y - bulletHeight,
+          });
         }
+
+        bulletsShot += bulletsPerShot;
+        canShoot = false;
+        setTimeout(() => (canShoot = true), 200);
       }
 
       function restartGame() {
