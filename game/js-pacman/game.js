@@ -644,25 +644,66 @@ window.addEventListener("keyup", (e) => {
   keys[e.key] = false;
 });
 
-const mobileButtons = document.querySelectorAll(".ctrlBtn");
-mobileButtons.forEach((button) => {
-  const moveKey = button.dataset.key;
-  if (!moveKey) return;
+// Virtual joystick: maps thumb offset to the same arrow keys the game loop reads.
+const joystick = document.getElementById("joystick");
+const joystickThumb = document.getElementById("joystickThumb");
+if (joystick && joystickThumb) {
+  const maxRadius = 38; // px the thumb can travel from center
+  const deadzone = 0.3; // fraction of maxRadius before a direction activates
+  let activePointerId = null;
 
-  button.addEventListener("pointerdown", (e) => {
-    e.preventDefault();
-    keys[moveKey] = true;
-  });
-
-  const releaseMove = (e) => {
-    e.preventDefault();
-    keys[moveKey] = false;
+  const clearJoystickKeys = () => {
+    keys["ArrowUp"] = false;
+    keys["ArrowDown"] = false;
+    keys["ArrowLeft"] = false;
+    keys["ArrowRight"] = false;
   };
 
-  button.addEventListener("pointerup", releaseMove);
-  button.addEventListener("pointercancel", releaseMove);
-  button.addEventListener("pointerleave", releaseMove);
-});
+  const updateJoystick = (clientX, clientY) => {
+    const rect = joystick.getBoundingClientRect();
+    const cx = rect.left + rect.width / 2;
+    const cy = rect.top + rect.height / 2;
+    let dx = clientX - cx;
+    let dy = clientY - cy;
+    const dist = Math.hypot(dx, dy);
+    if (dist > maxRadius) {
+      dx = (dx / dist) * maxRadius;
+      dy = (dy / dist) * maxRadius;
+    }
+    joystickThumb.style.transform = `translate(${dx}px, ${dy}px)`;
+
+    const nx = dx / maxRadius;
+    const ny = dy / maxRadius;
+    keys["ArrowLeft"] = nx < -deadzone;
+    keys["ArrowRight"] = nx > deadzone;
+    keys["ArrowUp"] = ny < -deadzone;
+    keys["ArrowDown"] = ny > deadzone;
+  };
+
+  joystick.addEventListener("pointerdown", (e) => {
+    e.preventDefault();
+    activePointerId = e.pointerId;
+    joystick.setPointerCapture(e.pointerId);
+    updateJoystick(e.clientX, e.clientY);
+  });
+
+  joystick.addEventListener("pointermove", (e) => {
+    if (e.pointerId !== activePointerId) return;
+    e.preventDefault();
+    updateJoystick(e.clientX, e.clientY);
+  });
+
+  const endJoystick = (e) => {
+    if (e.pointerId !== activePointerId) return;
+    e.preventDefault();
+    activePointerId = null;
+    joystickThumb.style.transform = "translate(0px, 0px)";
+    clearJoystickKeys();
+  };
+
+  joystick.addEventListener("pointerup", endJoystick);
+  joystick.addEventListener("pointercancel", endJoystick);
+}
 
 const speed = 0.1;
 resetButton.addEventListener("click", () => {
